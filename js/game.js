@@ -10,7 +10,8 @@ export const DISHES = {
         shape: [[1, 1]], // 2x1 horizontal
         canDishwasher: true,
         needsSoak: false,
-        needsTowelDry: false
+        needsTowelDry: false,
+        color: 'plate'
     },
     bowl: {
         name: 'Bowl',
@@ -18,7 +19,8 @@ export const DISHES = {
         shape: [[1, 1], [1, 1]], // 2x2
         canDishwasher: true,
         needsSoak: false,
-        needsTowelDry: false
+        needsTowelDry: false,
+        color: 'bowl'
     },
     cup: {
         name: 'Cup',
@@ -26,7 +28,8 @@ export const DISHES = {
         shape: [[1], [1]], // 1x2 vertical
         canDishwasher: true,
         needsSoak: false,
-        needsTowelDry: false
+        needsTowelDry: false,
+        color: 'cup'
     },
     pan: {
         name: 'Pan',
@@ -34,7 +37,8 @@ export const DISHES = {
         shape: [[1, 1, 1], [1, 0, 0]], // L-shape
         canDishwasher: false,
         needsSoak: true,
-        needsTowelDry: true
+        needsTowelDry: true,
+        color: 'pan'
     },
     glass: {
         name: 'Wine Glass',
@@ -42,7 +46,8 @@ export const DISHES = {
         shape: [[1], [1]], // 1x2 vertical
         canDishwasher: false, // Hand wash only!
         needsSoak: false,
-        needsTowelDry: true
+        needsTowelDry: true,
+        color: 'glass'
     }
 };
 
@@ -54,9 +59,18 @@ export const STATIONS = {
     STORAGE: 'storage'
 };
 
+// Station order for tab cycling (left to right)
+const STATION_ORDER = [
+    STATIONS.INTAKE,
+    STATIONS.DISHWASHER,
+    STATIONS.DRYING,
+    STATIONS.STORAGE
+];
+
 export class Game {
     constructor() {
         this.isRunning = false;
+        this.practiceMode = false;
         this.currentStation = STATIONS.INTAKE;
         this.heldDish = null;
         
@@ -81,10 +95,12 @@ export class Game {
         this.totalWaves = 3;
         this.timeRemaining = 180; // 3 minutes
         this.dishesClean = 0;
+        this.dishesSpawned = 0;
         
         // Callbacks for UI updates
         this.onUpdate = null;
         this.onGameOver = null;
+        this.onFeedback = null;
         
         // Wave spawning
         this.spawnTimer = null;
@@ -96,11 +112,13 @@ export class Game {
             .map(() => Array(this.gridWidth).fill(null));
     }
     
-    startShift() {
+    startShift(practiceMode = false) {
+        this.practiceMode = practiceMode;
         this.isRunning = true;
         this.wave = 1;
-        this.timeRemaining = 180;
+        this.timeRemaining = practiceMode ? 300 : 180; // 5 minutes for practice
         this.dishesClean = 0;
+        this.dishesSpawned = 0;
         this.grid = this.createEmptyGrid();
         this.intake = [];
         this.dryingRack = [null, null, null, null];
@@ -108,6 +126,8 @@ export class Game {
         this.heldDish = null;
         this.dishwasherRunning = false;
         this.currentStation = STATIONS.INTAKE;
+        this.cursorX = 0;
+        this.cursorY = 0;
         
         // Start spawning dishes
         this.startWave();
@@ -117,18 +137,24 @@ export class Game {
             this.timeRemaining--;
             this.onUpdate?.();
             
-            if (this.timeRemaining <= 0) {
+            if (this.timeRemaining <= 0 && !this.practiceMode) {
                 this.endShift(false);
             }
         }, 1000);
         
         this.onUpdate?.();
+        
+        if (practiceMode) {
+            this.onFeedback?.('Practice Mode - No fail state!', 'success');
+        }
     }
     
     startWave() {
         // Spawn dishes for this wave
-        const dishesToSpawn = 5 + (this.wave * 3); // More each wave
+        const dishesToSpawn = this.practiceMode ? 4 : 5 + (this.wave * 3);
         let spawned = 0;
+        
+        const spawnInterval = this.practiceMode ? 3000 : 2000;
         
         this.spawnTimer = setInterval(() => {
             if (spawned >= dishesToSpawn) {
@@ -138,18 +164,25 @@ export class Game {
             
             this.spawnDish();
             spawned++;
+            this.dishesSpawned++;
             
-            // Check for overflow
-            if (this.intake.length > 10) {
+            // Check for overflow (only in normal mode)
+            if (this.intake.length > 10 && !this.practiceMode) {
+                this.onFeedback?.('Too many dishes! Overflow!', 'error');
                 this.endShift(false);
+            } else if (this.intake.length > 7) {
+                this.onFeedback?.('Dishes piling up!', 'warning');
             }
             
             this.onUpdate?.();
-        }, 2000); // Spawn every 2 seconds
+        }, spawnInterval);
     }
     
     spawnDish() {
-        const types = ['plate', 'plate', 'plate', 'bowl', 'bowl', 'cup', 'cup', 'pan', 'glass'];
+        // Weighted distribution favoring dishwasher-safe dishes
+        const types = this.practiceMode 
+            ? ['plate', 'plate', 'bowl', 'cup'] // Easy dishes only in practice
+            : ['plate', 'plate', 'plate', 'bowl', 'bowl', 'cup', 'cup', 'pan', 'glass'];
         const type = types[Math.floor(Math.random() * types.length)];
         
         this.intake.push({
@@ -159,6 +192,13 @@ export class Game {
             rotation: 0,
             dirty: true
         });
+    }
+    
+    setStation(station) {
+        if (Object.values(STATIONS).includes(station)) {
+            this.currentStation = station;
+            this.onUpdate?.();
+        }
     }
     
     moveCursor(dx, dy) {
@@ -199,13 +239,24 @@ export class Game {
     }
     
     interactDishwasher() {
-        if (this.dishwasherRunning) return;
+        if (this.dishwasherRunning) {
+            this.onFeedback?.("Can't open during cycle!", 'warning');
+            return;
+        }
         
         if (this.heldDish) {
+            // Check if dish can go in dishwasher
+            if (!this.heldDish.canDishwasher) {
+                this.onFeedback?.(`${this.heldDish.name} needs hand washing!`, 'warning');
+                return;
+            }
+            
             // Try to place dish at cursor position
             if (this.canPlaceDish(this.heldDish, this.cursorX, this.cursorY)) {
                 this.placeDish(this.heldDish, this.cursorX, this.cursorY);
                 this.heldDish = null;
+            } else {
+                this.onFeedback?.("Can't place here!", 'error');
             }
         } else {
             // Try to pick up dish from grid
@@ -219,11 +270,19 @@ export class Game {
     
     interactDrying() {
         if (this.heldDish) {
+            // Check if dish is clean
+            if (this.heldDish.dirty) {
+                this.onFeedback?.('Wash it first!', 'warning');
+                return;
+            }
+            
             // Find empty drying slot
             const emptySlot = this.dryingRack.findIndex(slot => slot === null);
-            if (emptySlot !== -1 && !this.heldDish.dirty) {
+            if (emptySlot !== -1) {
                 this.dryingRack[emptySlot] = this.heldDish;
                 this.heldDish = null;
+            } else {
+                this.onFeedback?.('Drying rack full!', 'warning');
             }
         } else {
             // Pick up from first occupied slot
@@ -236,16 +295,36 @@ export class Game {
     }
     
     interactStorage() {
-        if (this.heldDish && !this.heldDish.dirty) {
+        if (this.heldDish) {
+            if (this.heldDish.dirty) {
+                this.onFeedback?.("Can't store dirty dishes!", 'error');
+                return;
+            }
+            
             // Store the dish
             this.storage[this.heldDish.type]++;
             this.dishesClean++;
+            this.onFeedback?.(`${this.heldDish.name} stored! +1`, 'success');
             this.heldDish = null;
             
             // Check for wave completion
-            if (this.intake.length === 0 && !this.hasAnyDirtyDishes()) {
-                this.nextWave();
-            }
+            this.checkWaveCompletion();
+        }
+    }
+    
+    checkWaveCompletion() {
+        // Check if all dishes are processed
+        if (this.intake.length === 0 && 
+            !this.hasAnyDirtyDishes() && 
+            !this.heldDish &&
+            this.dryingRack.every(slot => slot === null)) {
+            
+            // Small delay before checking so spawner can catch up
+            setTimeout(() => {
+                if (this.intake.length === 0 && !this.hasAnyDirtyDishes()) {
+                    this.nextWave();
+                }
+            }, 500);
         }
     }
     
@@ -342,9 +421,8 @@ export class Game {
     }
     
     cycleStation() {
-        const stations = Object.values(STATIONS);
-        const currentIndex = stations.indexOf(this.currentStation);
-        this.currentStation = stations[(currentIndex + 1) % stations.length];
+        const currentIndex = STATION_ORDER.indexOf(this.currentStation);
+        this.currentStation = STATION_ORDER[(currentIndex + 1) % STATION_ORDER.length];
         this.onUpdate?.();
     }
     
@@ -367,12 +445,15 @@ export class Game {
             if (hasDishes) break;
         }
         
-        if (!hasDishes) return;
+        if (!hasDishes) {
+            this.onFeedback?.('Load some dishes first!', 'warning');
+            return;
+        }
         
         this.dishwasherRunning = true;
         this.cycleProgress = 0;
         
-        const cycleDuration = 5000; // 5 seconds
+        const cycleDuration = this.practiceMode ? 3000 : 5000;
         const updateInterval = 100;
         
         const cycleTimer = setInterval(() => {
@@ -387,10 +468,17 @@ export class Game {
     }
     
     completeCycle() {
-        // Mark all dishes in dishwasher as clean
+        // Count and mark all dishes in dishwasher as clean
+        let dishCount = 0;
+        const uniqueDishes = new Set();
+        
         for (let y = 0; y < this.gridHeight; y++) {
             for (let x = 0; x < this.gridWidth; x++) {
                 if (this.grid[y][x]) {
+                    if (!uniqueDishes.has(this.grid[y][x].id)) {
+                        uniqueDishes.add(this.grid[y][x].id);
+                        dishCount++;
+                    }
                     this.grid[y][x].dirty = false;
                 }
             }
@@ -398,15 +486,32 @@ export class Game {
         
         this.dishwasherRunning = false;
         this.cycleProgress = 0;
+        
+        const efficiency = Math.round((this.getGridUsage() / (this.gridWidth * this.gridHeight)) * 100);
+        this.onFeedback?.(`✨ ${dishCount} dishes clean! (${efficiency}% load)`, 'success');
+        
         this.onUpdate?.();
+    }
+    
+    getGridUsage() {
+        let count = 0;
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.grid[y][x]) count++;
+            }
+        }
+        return count;
     }
     
     nextWave() {
         if (this.wave >= this.totalWaves) {
+            this.onFeedback?.('All waves complete!', 'success');
             this.endShift(true);
         } else {
             this.wave++;
+            this.onFeedback?.(`Wave ${this.wave} starting!`, 'success');
             this.startWave();
+            this.onUpdate?.();
         }
     }
     
@@ -415,11 +520,17 @@ export class Game {
         clearInterval(this.spawnTimer);
         clearInterval(this.gameTimer);
         
+        const expectedDishes = this.practiceMode ? 12 : (5 + 8 + 11);
+        const timeBonus = success ? Math.floor(this.timeRemaining / 10) : 0;
+        
         this.onGameOver?.({
             success,
             dishesClean: this.dishesClean,
             timeRemaining: this.timeRemaining,
-            efficiency: Math.round((this.dishesClean / (5 + 8 + 11)) * 100) // Based on expected dishes
+            timeBonus,
+            efficiency: Math.round((this.dishesClean / Math.max(this.dishesSpawned, 1)) * 100),
+            storage: { ...this.storage },
+            practiceMode: this.practiceMode
         });
     }
     
@@ -427,7 +538,7 @@ export class Game {
     getGridWithPreview() {
         const preview = this.grid.map(row => [...row]);
         
-        if (this.heldDish && this.currentStation === STATIONS.DISHWASHER) {
+        if (this.heldDish && this.currentStation === STATIONS.DISHWASHER && this.heldDish.canDishwasher) {
             const canPlace = this.canPlaceDish(this.heldDish, this.cursorX, this.cursorY);
             const shape = this.getRotatedShape(this.heldDish);
             
@@ -439,7 +550,11 @@ export class Game {
                         
                         if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
                             if (preview[y][x] === null) {
-                                preview[y][x] = { preview: true, valid: canPlace };
+                                preview[y][x] = { 
+                                    preview: true, 
+                                    valid: canPlace,
+                                    type: this.heldDish.type 
+                                };
                             }
                         }
                     }
