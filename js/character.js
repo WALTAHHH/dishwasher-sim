@@ -15,10 +15,15 @@ export const CHARACTER_CONFIG = {
     width: 32,
     height: 32,
     
-    // Visual
-    emoji: '🧑‍🍳',      // Chef emoji
-    bobSpeed: 8,        // walking animation bob speed
-    bobAmount: 3        // walking animation bob pixels
+    // Visual - Dishwasher (the person washing dishes!)
+    emoji: '🧽',         // Sponge - represents the dishwasher
+    bodyColor: '#5a9bd4', // Blue apron
+    bobSpeed: 8,         // walking animation bob speed
+    bobAmount: 3,        // walking animation bob pixels
+    
+    // NPC collision
+    stunDuration: 0.5,   // seconds stunned after NPC bump
+    stunSlowdown: 0.3    // movement multiplier while stunned
 };
 
 export class Character {
@@ -52,6 +57,11 @@ export class Character {
         
         // Current station proximity
         this.nearStation = null;
+        
+        // Stun state (from NPC collisions)
+        this.stunTime = 0;
+        this.isStunned = false;
+        this.lastNPCBumpMessage = '';
     }
     
     /**
@@ -68,6 +78,15 @@ export class Character {
     update(dt) {
         const config = CHARACTER_CONFIG;
         
+        // Update stun timer
+        if (this.stunTime > 0) {
+            this.stunTime -= dt;
+            if (this.stunTime <= 0) {
+                this.stunTime = 0;
+                this.isStunned = false;
+            }
+        }
+        
         // Calculate target velocity from input
         let targetVx = 0;
         let targetVy = 0;
@@ -80,8 +99,10 @@ export class Character {
         // Normalize diagonal movement
         const inputMag = Math.sqrt(targetVx * targetVx + targetVy * targetVy);
         if (inputMag > 0) {
-            targetVx = (targetVx / inputMag) * config.speed;
-            targetVy = (targetVy / inputMag) * config.speed;
+            // Apply stun slowdown if stunned
+            const speedMultiplier = this.isStunned ? config.stunSlowdown : 1;
+            targetVx = (targetVx / inputMag) * config.speed * speedMultiplier;
+            targetVy = (targetVy / inputMag) * config.speed * speedMultiplier;
             this.isWalking = true;
         } else {
             this.isWalking = false;
@@ -142,6 +163,27 @@ export class Character {
         
         // Update station proximity
         this.nearStation = this.kitchen.getStationAt(this.x, this.y);
+    }
+    
+    /**
+     * Apply stun effect from NPC collision
+     */
+    applyStun(npcType) {
+        const config = CHARACTER_CONFIG;
+        this.stunTime = config.stunDuration;
+        this.isStunned = true;
+        
+        // Slight knockback
+        this.vx *= -0.5;
+        this.vy *= -0.5;
+        
+        // Generate bump message
+        const messages = {
+            chef: ["Watch it!", "Coming through!", "Hot pan!", "Behind you!"],
+            waiter: ["Excuse me!", "Order up!", "Make way!", "Busy here!"]
+        };
+        const msgList = messages[npcType] || messages.chef;
+        this.lastNPCBumpMessage = msgList[Math.floor(Math.random() * msgList.length)];
     }
     
     /**

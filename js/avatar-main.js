@@ -8,12 +8,14 @@ import { Character } from './character.js';
 import { Renderer } from './renderer.js';
 import { Game, STATIONS, DISHES } from './game.js';
 import { audio } from './audio.js';
+import { NPCManager } from './npcs.js';
 
 class AvatarGame {
     constructor() {
         // Core systems
         this.kitchen = new Kitchen();
         this.character = new Character(this.kitchen);
+        this.npcManager = new NPCManager();
         
         // Get canvas
         this.canvas = document.getElementById('kitchen-canvas');
@@ -39,6 +41,10 @@ class AvatarGame {
         
         // Debug mode
         this.debug = false;
+        
+        // NPC collision cooldown (prevent spam)
+        this.lastBumpTime = 0;
+        this.bumpCooldown = 1000; // ms
         
         // Setup
         this.setupInput();
@@ -146,13 +152,22 @@ class AvatarGame {
         this.character.vx = 0;
         this.character.vy = 0;
         this.character.heldItem = null;
+        this.character.stunTime = 0;
+        this.character.isStunned = false;
         
         // Start game logic
         this.game.startShift(false);
         
+        // Set up NPCs for wave 1
+        this.npcManager.setupWave(1);
+        
+        // Track wave for NPC updates
+        this.currentWave = 1;
+        
         // Start game loop
         this.running = true;
         this.lastTime = performance.now();
+        this.lastBumpTime = 0;
         requestAnimationFrame((t) => this.gameLoop(t));
     }
     
@@ -176,15 +191,50 @@ class AvatarGame {
     update(dt) {
         if (!this.modalOpen) {
             this.character.update(dt);
+            
+            // Update NPCs
+            this.npcManager.update(dt);
+            
+            // Check NPC collisions
+            this.checkNPCCollisions();
+        }
+        
+        // Check if wave changed (spawn more NPCs)
+        if (this.game.wave !== this.currentWave) {
+            this.currentWave = this.game.wave;
+            this.npcManager.setupWave(this.currentWave);
         }
         
         // Update HUD
         this.updateHUD();
     }
     
+    checkNPCCollisions() {
+        const now = performance.now();
+        
+        // Cooldown check
+        if (now - this.lastBumpTime < this.bumpCooldown) return;
+        
+        const collidedNPC = this.npcManager.checkPlayerCollision(this.character);
+        
+        if (collidedNPC) {
+            this.lastBumpTime = now;
+            
+            // Apply stun to player
+            this.character.applyStun(collidedNPC.type);
+            
+            // Show feedback
+            this.showFeedback(this.character.lastNPCBumpMessage, 'warning');
+            
+            // Play bump sound (if available)
+            // audio.playBump?.();
+        }
+    }
+    
     render() {
         this.renderer.render(this.kitchen, this.character, {
-            heldItem: this.game.heldDish
+            heldItem: this.game.heldDish,
+            npcs: this.npcManager.getAll()
         });
         
         // Debug overlay
@@ -496,6 +546,9 @@ class AvatarGame {
         this.running = false;
         this.showScreen('results');
         
+        // Clear NPCs
+        this.npcManager.clear();
+        
         // Populate results
         document.getElementById('result-cleaned').textContent = results.dishesClean;
         document.getElementById('result-efficiency').textContent = `${results.efficiency}%`;
@@ -512,6 +565,7 @@ class AvatarGame {
 document.addEventListener('DOMContentLoaded', () => {
     window.avatarGame = new AvatarGame();
     console.log('🧽 Dishwasher Simulator - Avatar Mode loaded');
+    console.log('👤 You are the DISHWASHER - avoid the chefs and waiters!');
     console.log('🎮 Controls: WASD=move, Space=interact, R=rotate');
     console.log('🔧 Press F1 for debug collision view');
 });

@@ -5,6 +5,7 @@
 
 import { KITCHEN_CONFIG, STATION_ZONES, OBSTACLES, FLOOR_PATTERN } from './kitchen.js';
 import { CHARACTER_CONFIG } from './character.js';
+import { NPC_CONFIG } from './npcs.js';
 
 export class Renderer {
     constructor(canvas) {
@@ -133,11 +134,11 @@ export class Renderer {
     }
     
     /**
-     * Draw the character/avatar
+     * Draw the character/avatar (the dishwasher - person washing dishes!)
      */
     drawCharacter(character) {
         const ctx = this.ctx;
-        const { x, y, facingRight, heldItem } = character;
+        const { x, y, facingRight, heldItem, isStunned } = character;
         const bob = character.getBobOffset();
         
         // Shadow
@@ -146,35 +147,54 @@ export class Renderer {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.fill();
         
-        // Character body (circle background)
+        // Stun effect - red tint when bumped
+        const bodyColor = isStunned ? '#ff6b6b' : CHARACTER_CONFIG.bodyColor;
+        
+        // Character body (circle background) - blue apron
         ctx.beginPath();
         ctx.arc(x, y - bob, CHARACTER_CONFIG.width / 2 + 4, 0, Math.PI * 2);
-        ctx.fillStyle = '#4a9fff';
+        ctx.fillStyle = bodyColor;
         ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = isStunned ? '#ff0000' : '#fff';
+        ctx.lineWidth = isStunned ? 3 : 2;
         ctx.stroke();
         
-        // Character emoji
-        ctx.font = '28px sans-serif';
+        // Draw apron detail (small rectangle below)
+        ctx.fillStyle = '#4a7bb0';
+        ctx.fillRect(x - 8, y - bob + 5, 16, 12);
+        
+        // Character emoji (sponge for dishwasher identity)
+        ctx.font = '24px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
         // Flip if facing left
         if (!facingRight) {
             ctx.save();
-            ctx.translate(x, y - bob);
+            ctx.translate(x, y - bob - 4);
             ctx.scale(-1, 1);
             ctx.fillText(CHARACTER_CONFIG.emoji, 0, 0);
             ctx.restore();
         } else {
-            ctx.fillText(CHARACTER_CONFIG.emoji, x, y - bob);
+            ctx.fillText(CHARACTER_CONFIG.emoji, x, y - bob - 4);
+        }
+        
+        // Stun stars
+        if (isStunned) {
+            const starTime = Date.now() / 100;
+            ctx.font = '12px sans-serif';
+            for (let i = 0; i < 3; i++) {
+                const angle = (starTime + i * 2.1) % (Math.PI * 2);
+                const starX = x + Math.cos(angle) * 20;
+                const starY = y - bob - 20 + Math.sin(angle * 2) * 5;
+                ctx.fillText('💫', starX, starY);
+            }
         }
         
         // Held item (if any)
         if (heldItem) {
-            const itemX = x + (facingRight ? 20 : -20);
-            const itemY = y - bob - 25;
+            const itemX = x + (facingRight ? 22 : -22);
+            const itemY = y - bob - 20;
             
             // Item glow
             ctx.beginPath();
@@ -185,6 +205,76 @@ export class Renderer {
             // Item emoji
             ctx.font = '24px sans-serif';
             ctx.fillText(heldItem.emoji, itemX, itemY);
+        }
+    }
+    
+    /**
+     * Draw all NPCs (chefs, waiters)
+     */
+    drawNPCs(npcs) {
+        const ctx = this.ctx;
+        
+        for (const npc of npcs) {
+            const config = NPC_CONFIG[npc.type];
+            const bob = npc.getBobOffset();
+            
+            // Shadow
+            ctx.beginPath();
+            ctx.ellipse(npc.x, npc.y + config.height / 2, 14, 5, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+            ctx.fill();
+            
+            // Body background
+            ctx.beginPath();
+            ctx.arc(npc.x, npc.y - bob, config.width / 2 + 2, 0, Math.PI * 2);
+            ctx.fillStyle = config.bodyColor;
+            ctx.fill();
+            ctx.strokeStyle = npc.type === 'chef' ? '#ccc' : '#444';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Type-specific details
+            if (npc.type === 'chef') {
+                // Chef hat (toque) - small white rectangle on top
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(npc.x - 6, npc.y - bob - config.height / 2 - 8, 12, 8);
+                ctx.strokeStyle = '#ddd';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(npc.x - 6, npc.y - bob - config.height / 2 - 8, 12, 8);
+            } else {
+                // Waiter bow tie
+                ctx.fillStyle = '#c0392b';
+                ctx.beginPath();
+                ctx.moveTo(npc.x - 5, npc.y - bob + 8);
+                ctx.lineTo(npc.x, npc.y - bob + 5);
+                ctx.lineTo(npc.x + 5, npc.y - bob + 8);
+                ctx.lineTo(npc.x, npc.y - bob + 11);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // NPC emoji
+            ctx.font = '22px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            if (!npc.facingRight) {
+                ctx.save();
+                ctx.translate(npc.x, npc.y - bob - 2);
+                ctx.scale(-1, 1);
+                ctx.fillText(config.emoji, 0, 0);
+                ctx.restore();
+            } else {
+                ctx.fillText(config.emoji, npc.x, npc.y - bob - 2);
+            }
+            
+            // Waiter carrying dish indicator
+            if (npc.carryingDish && npc.type === 'waiter') {
+                const trayX = npc.x + (npc.facingRight ? 18 : -18);
+                const trayY = npc.y - bob - 15;
+                ctx.font = '16px sans-serif';
+                ctx.fillText('🍽️', trayX, trayY);
+            }
         }
     }
     
@@ -239,7 +329,15 @@ export class Renderer {
         this.drawFloor();
         this.drawStations(character.getCurrentStation());
         this.drawObstacles();
+        
+        // Draw NPCs (if provided)
+        if (gameState.npcs) {
+            this.drawNPCs(gameState.npcs);
+        }
+        
+        // Draw player on top of NPCs
         this.drawCharacter(character);
+        
         this.drawHUD({
             nearStation: character.getCurrentStation(),
             heldItem: character.heldItem,
