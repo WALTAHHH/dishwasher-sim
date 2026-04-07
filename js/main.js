@@ -5,11 +5,20 @@
 
 import { Game } from './game.js';
 import { UI } from './ui.js';
+import { DebugTools } from './debug.js';
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     const game = new Game();
     const ui = new UI(game);
+    
+    // Initialize debug tools (toggle with ` or Ctrl+D)
+    const debug = new DebugTools(game, ui);
+    
+    // Expose to console for manual debugging
+    window.game = game;
+    window.ui = ui;
+    window.debug = debug;
     
     // Wire up title screen
     document.getElementById('btn-start').addEventListener('click', () => {

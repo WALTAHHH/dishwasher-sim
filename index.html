@@ -14,47 +14,112 @@
             <p class="tagline">Clean dishes. Clear mind.</p>
             <div class="menu">
                 <button id="btn-start">Start Shift</button>
+                <button id="btn-tutorial">Tutorial</button>
                 <button id="btn-endless" disabled>Endless Mode</button>
-                <button id="btn-settings" disabled>Settings</button>
             </div>
-            <p class="hint">WASD to move • SPACE to grab • SHIFT to rotate</p>
+            <div class="controls-hint">
+                <h4>Controls</h4>
+                <div class="hint-row"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> Switch stations</div>
+                <div class="hint-row"><kbd>WASD</kbd> Move cursor in grid</div>
+                <div class="hint-row"><kbd>Space</kbd> Pick up / Place</div>
+                <div class="hint-row"><kbd>R</kbd> Rotate dish</div>
+                <div class="hint-row"><kbd>Enter</kbd> Run cycle</div>
+            </div>
+            <div class="best-run hidden" id="best-run-display">
+                <span class="label">Best Run:</span>
+                <span id="best-run-score">0</span> dishes
+            </div>
         </div>
 
         <!-- Game Screen -->
         <div id="game-screen" class="screen">
             <!-- Station: Intake -->
-            <div id="station-intake" class="station">
-                <h3>📥 Intake</h3>
+            <div id="station-intake" class="station" data-station="intake" data-hotkey="1">
+                <div class="station-header">
+                    <h3><span class="hotkey">1</span> 📥 Intake</h3>
+                    <span class="station-hint">Click dish or press Space</span>
+                </div>
                 <div class="intake-queue"></div>
+                <div class="station-info">
+                    <span class="queue-count">0 dishes waiting</span>
+                </div>
             </div>
 
             <!-- Station: Dishwasher (Tetris Grid) -->
-            <div id="station-dishwasher" class="station">
-                <h3>🫧 Dishwasher</h3>
+            <div id="station-dishwasher" class="station" data-station="dishwasher" data-hotkey="2">
+                <div class="station-header">
+                    <h3><span class="hotkey">2</span> 🫧 Dishwasher</h3>
+                    <span class="station-hint">Pack dishes efficiently</span>
+                </div>
                 <div class="dishwasher-container">
                     <div class="dishwasher-grid"></div>
+                    <div class="dishwasher-info">
+                        <div class="grid-usage">
+                            <span class="label">Load:</span>
+                            <div class="usage-bar">
+                                <div class="usage-fill" id="grid-usage-fill"></div>
+                            </div>
+                            <span id="grid-usage-text">0%</span>
+                        </div>
+                        <div class="dish-compatibility">
+                            <span class="can-wash">✓ Plates, Bowls, Cups</span>
+                            <span class="cannot-wash">✗ Pans, Glass (hand wash)</span>
+                        </div>
+                    </div>
                     <div class="dishwasher-controls">
-                        <button id="btn-run-cycle" disabled>Run Cycle</button>
+                        <button id="btn-run-cycle" disabled>Run Cycle <kbd>Enter</kbd></button>
                         <div class="cycle-timer hidden">
                             <div class="timer-bar"></div>
+                            <span class="timer-text">Washing...</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Station: Drying Rack -->
-            <div id="station-drying" class="station">
-                <h3>💨 Drying Rack</h3>
+            <div id="station-drying" class="station" data-station="drying" data-hotkey="3">
+                <div class="station-header">
+                    <h3><span class="hotkey">3</span> 💨 Drying Rack</h3>
+                    <span class="station-hint">Clean dishes only</span>
+                </div>
                 <div class="drying-slots"></div>
+                <div class="station-info">
+                    <span class="slots-available">4 slots available</span>
+                </div>
             </div>
 
             <!-- Station: Storage -->
-            <div id="station-storage" class="station">
-                <h3>📦 Storage</h3>
+            <div id="station-storage" class="station" data-station="storage" data-hotkey="4">
+                <div class="station-header">
+                    <h3><span class="hotkey">4</span> 📦 Storage</h3>
+                    <span class="station-hint">Store clean dishes here</span>
+                </div>
                 <div class="storage-shelves">
-                    <div class="shelf" data-type="plate">Plates</div>
-                    <div class="shelf" data-type="bowl">Bowls</div>
-                    <div class="shelf" data-type="cup">Cups</div>
+                    <div class="shelf" data-type="plate">
+                        <span class="shelf-icon">🍽️</span>
+                        <span class="shelf-name">Plates</span>
+                        <span class="shelf-count">0</span>
+                    </div>
+                    <div class="shelf" data-type="bowl">
+                        <span class="shelf-icon">🥣</span>
+                        <span class="shelf-name">Bowls</span>
+                        <span class="shelf-count">0</span>
+                    </div>
+                    <div class="shelf" data-type="cup">
+                        <span class="shelf-icon">☕</span>
+                        <span class="shelf-name">Cups</span>
+                        <span class="shelf-count">0</span>
+                    </div>
+                    <div class="shelf" data-type="pan">
+                        <span class="shelf-icon">🍳</span>
+                        <span class="shelf-name">Pans</span>
+                        <span class="shelf-count">0</span>
+                    </div>
+                    <div class="shelf" data-type="glass">
+                        <span class="shelf-icon">🍷</span>
+                        <span class="shelf-name">Glasses</span>
+                        <span class="shelf-count">0</span>
+                    </div>
                 </div>
             </div>
 
@@ -62,46 +127,201 @@
             <div id="hud">
                 <div class="hud-item">
                     <span class="label">Wave</span>
+                    <div class="wave-progress">
+                        <div class="wave-bar" id="wave-bar"></div>
+                    </div>
                     <span id="hud-wave">1/3</span>
                 </div>
-                <div class="hud-item">
+                <div class="hud-item hud-time">
                     <span class="label">Time</span>
                     <span id="hud-time">3:00</span>
                 </div>
                 <div class="hud-item">
-                    <span class="label">Clean</span>
+                    <span class="label">Cleaned</span>
                     <span id="hud-clean">0</span>
+                </div>
+            </div>
+
+            <!-- Keyboard Hints Overlay -->
+            <div id="keyboard-hints" class="keyboard-hints">
+                <div class="hint-group">
+                    <kbd>1-4</kbd> Stations
+                </div>
+                <div class="hint-group">
+                    <kbd>Space</kbd> Grab
+                </div>
+                <div class="hint-group">
+                    <kbd>R</kbd> Rotate
+                </div>
+                <div class="hint-group">
+                    <kbd>?</kbd> Help
                 </div>
             </div>
 
             <!-- Held Item Display -->
             <div id="held-item" class="hidden">
                 <div class="held-dish"></div>
+                <div class="held-info">
+                    <span class="held-name"></span>
+                    <span class="held-status"></span>
+                </div>
             </div>
 
-            <!-- Cursor -->
-            <div id="cursor"></div>
+            <!-- Feedback Toast -->
+            <div id="feedback-toast" class="feedback-toast hidden"></div>
+        </div>
+
+        <!-- Tutorial Overlay -->
+        <div id="tutorial-overlay" class="tutorial-overlay hidden">
+            <div class="tutorial-content">
+                <div class="tutorial-step" data-step="1">
+                    <h2>Welcome to Dishwasher Simulator!</h2>
+                    <p>Let's learn the basics of keeping a kitchen running smoothly.</p>
+                    <div class="tutorial-highlight" data-target="station-intake"></div>
+                </div>
+                <div class="tutorial-step hidden" data-step="2">
+                    <h2>1. Grab Dirty Dishes</h2>
+                    <p>Press <kbd>1</kbd> to go to Intake, then <kbd>Space</kbd> to grab a dish.</p>
+                    <p class="tutorial-tip">💡 Dishes arrive in waves - don't let them pile up!</p>
+                </div>
+                <div class="tutorial-step hidden" data-step="3">
+                    <h2>2. Load the Dishwasher</h2>
+                    <p>Press <kbd>2</kbd> for the dishwasher. Use <kbd>WASD</kbd> to move, <kbd>Space</kbd> to place.</p>
+                    <p>Press <kbd>R</kbd> to rotate dishes for better fit!</p>
+                    <p class="tutorial-tip">💡 Plates, bowls, and cups go here. Pans and glasses need hand washing!</p>
+                </div>
+                <div class="tutorial-step hidden" data-step="4">
+                    <h2>3. Run the Cycle</h2>
+                    <p>Press <kbd>Enter</kbd> to start washing. More dishes = better efficiency!</p>
+                    <p class="tutorial-tip">💡 You can't open it mid-cycle, so pack wisely!</p>
+                </div>
+                <div class="tutorial-step hidden" data-step="5">
+                    <h2>4. Dry and Store</h2>
+                    <p>Move clean dishes to Drying (<kbd>3</kbd>) then Storage (<kbd>4</kbd>).</p>
+                    <p>Stored dishes = points!</p>
+                </div>
+                <div class="tutorial-step hidden" data-step="6">
+                    <h2>Ready to Roll!</h2>
+                    <p>Clear all dishes before time runs out. Good luck!</p>
+                    <button id="btn-tutorial-start">Start Practice Round</button>
+                    <button id="btn-tutorial-skip">Skip to Real Game</button>
+                </div>
+                <div class="tutorial-nav">
+                    <button id="btn-tutorial-prev" disabled>← Back</button>
+                    <div class="tutorial-dots">
+                        <span class="dot active" data-step="1"></span>
+                        <span class="dot" data-step="2"></span>
+                        <span class="dot" data-step="3"></span>
+                        <span class="dot" data-step="4"></span>
+                        <span class="dot" data-step="5"></span>
+                        <span class="dot" data-step="6"></span>
+                    </div>
+                    <button id="btn-tutorial-next">Next →</button>
+                </div>
+                <button id="btn-tutorial-close" class="tutorial-close">×</button>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="help-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>How to Play</h2>
+                <div class="help-section">
+                    <h3>Goal</h3>
+                    <p>Clean and store all dishes before time runs out!</p>
+                </div>
+                <div class="help-section">
+                    <h3>Dish Types</h3>
+                    <div class="dish-guide">
+                        <div class="dish-info">
+                            <span>🍽️ Plate</span>
+                            <span class="tag ok">Dishwasher ✓</span>
+                        </div>
+                        <div class="dish-info">
+                            <span>🥣 Bowl</span>
+                            <span class="tag ok">Dishwasher ✓</span>
+                        </div>
+                        <div class="dish-info">
+                            <span>☕ Cup</span>
+                            <span class="tag ok">Dishwasher ✓</span>
+                        </div>
+                        <div class="dish-info">
+                            <span>🍳 Pan</span>
+                            <span class="tag warn">Hand wash only</span>
+                        </div>
+                        <div class="dish-info">
+                            <span>🍷 Glass</span>
+                            <span class="tag warn">Hand wash only</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="help-section">
+                    <h3>Controls</h3>
+                    <div class="controls-grid">
+                        <div><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd></div><div>Switch stations</div>
+                        <div><kbd>Tab</kbd></div><div>Cycle stations</div>
+                        <div><kbd>WASD</kbd></div><div>Move cursor</div>
+                        <div><kbd>Space</kbd></div><div>Pick up / Place</div>
+                        <div><kbd>R</kbd></div><div>Rotate held dish</div>
+                        <div><kbd>Enter</kbd></div><div>Run dishwasher</div>
+                        <div><kbd>?</kbd></div><div>Toggle this help</div>
+                    </div>
+                </div>
+                <button id="btn-help-close">Got it!</button>
+            </div>
         </div>
 
         <!-- Results Screen -->
         <div id="results-screen" class="screen">
-            <h2>Shift Complete!</h2>
+            <h2 id="results-title">Shift Complete!</h2>
             <div class="results">
-                <div class="stat">
+                <div class="stat main-stat">
                     <span class="label">Dishes Cleaned</span>
                     <span id="result-cleaned">0</span>
                 </div>
-                <div class="stat">
-                    <span class="label">Efficiency</span>
-                    <span id="result-efficiency">0%</span>
+                <div class="stat-row">
+                    <div class="stat">
+                        <span class="label">Time Bonus</span>
+                        <span id="result-time-bonus">+0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="label">Efficiency</span>
+                        <span id="result-efficiency">0%</span>
+                    </div>
                 </div>
-                <div class="stat">
+                <div class="stat-breakdown">
+                    <h4>Breakdown</h4>
+                    <div class="breakdown-row">
+                        <span>🍽️ Plates</span>
+                        <span id="result-plates">0</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>🥣 Bowls</span>
+                        <span id="result-bowls">0</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>☕ Cups</span>
+                        <span id="result-cups">0</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>🍳 Pans</span>
+                        <span id="result-pans">0</span>
+                    </div>
+                    <div class="breakdown-row">
+                        <span>🍷 Glasses</span>
+                        <span id="result-glasses">0</span>
+                    </div>
+                </div>
+                <div class="stat rating-stat">
                     <span class="label">Rating</span>
                     <span id="result-rating">⭐⭐⭐</span>
                 </div>
+                <div class="new-best hidden" id="new-best">🎉 New Best!</div>
             </div>
-            <button id="btn-retry">Try Again</button>
-            <button id="btn-menu">Main Menu</button>
+            <div class="results-buttons">
+                <button id="btn-retry">Try Again</button>
+                <button id="btn-menu">Main Menu</button>
+            </div>
         </div>
     </div>
 
