@@ -16,6 +16,11 @@ const DEFAULT_TUNING = {
     intakeOverflowLimit: 10
 };
 
+// Feature flags
+export const FEATURE_FLAGS = {
+    showNPCProgress: true  // Show chef cooking progress bars
+};
+
 export class DebugTools {
     constructor(game, ui) {
         this.game = game;
@@ -148,6 +153,14 @@ export class DebugTools {
                 <div class="debug-row">
                     <button id="dbg-clear-grid">Clear Grid</button>
                     <button id="dbg-fill-grid">Fill Random</button>
+                </div>
+            </div>
+            
+            <div class="debug-section">
+                <h4>Feature Flags</h4>
+                <div class="debug-row">
+                    <label>Show NPC Progress Bars:</label>
+                    <input type="checkbox" id="dbg-npc-progress" checked>
                 </div>
             </div>
             
@@ -466,6 +479,16 @@ export class DebugTools {
         
         // Dashboard toggle
         this.panel.querySelector('#dbg-dashboard').onclick = () => this.toggleDashboard();
+        
+        // Feature flags
+        this.panel.querySelector('#dbg-npc-progress').onchange = (e) => {
+            FEATURE_FLAGS.showNPCProgress = e.target.checked;
+            // Also update avatar game if it exists
+            if (window.avatarGame?.settings) {
+                window.avatarGame.settings.showNPCProgress = e.target.checked;
+            }
+            console.log(`📊 NPC Progress Bars: ${e.target.checked ? 'ON' : 'OFF'}`);
+        };
     }
     
     wireDashboardButtons() {
@@ -791,6 +814,7 @@ export class DebugTools {
         this.panel.querySelector('#dbg-spawn-rate-val').textContent = `${this.tuning.spawnInterval}ms`;
         this.panel.querySelector('#dbg-auto-spawn').checked = this.autoSpawn;
         this.panel.querySelector('#dbg-infinite-time').checked = this.infiniteTime;
+        this.panel.querySelector('#dbg-npc-progress').checked = FEATURE_FLAGS.showNPCProgress;
     }
     
     applyTuning() {

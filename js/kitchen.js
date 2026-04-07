@@ -55,6 +55,30 @@ export const STATION_ZONES = {
     }
 };
 
+// Overflow zones for intake (when primary is full)
+export const OVERFLOW_ZONES = {
+    overflow1: {
+        x: 60,
+        y: 180,
+        width: 80,
+        height: 100,
+        emoji: '📥',
+        label: 'Overflow 1',
+        color: '#c0392b',
+        capacity: 3
+    },
+    overflow2: {
+        x: 60,
+        y: 470,
+        width: 80,
+        height: 100,
+        emoji: '📥',
+        label: 'Overflow 2', 
+        color: '#a93226',
+        capacity: 3
+    }
+};
+
 // Obstacle/collision rectangles (counters, walls, etc.)
 export const OBSTACLES = [
     // Top counter (behind storage)

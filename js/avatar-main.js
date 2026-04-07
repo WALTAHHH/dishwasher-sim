@@ -3,12 +3,12 @@
  * Third-person kitchen movement system
  */
 
-import { Kitchen } from './kitchen.js';
+import { Kitchen, OVERFLOW_ZONES } from './kitchen.js';
 import { Character } from './character.js';
-import { Renderer } from './renderer.js';
+import { Renderer, RENDER_SETTINGS } from './renderer.js';
 import { Game, STATIONS, DISHES } from './game.js';
 import { audio } from './audio.js';
-import { NPCManager } from './npcs.js';
+import { NPCManager, COLLISION_TYPE } from './npcs.js';
 
 class AvatarGame {
     constructor() {
@@ -46,9 +46,54 @@ class AvatarGame {
         this.lastBumpTime = 0;
         this.bumpCooldown = 1000; // ms
         
+        // Overflow state (tracks dishes in overflow zones)
+        this.overflowState = {
+            counts: [0, 0],
+            showWarning: false
+        };
+        
+        // Settings
+        this.settings = {
+            showNPCProgress: true  // Show chef cooking progress bars
+        };
+        
         // Setup
         this.setupInput();
         this.setupUI();
+        
+        // Wire up busser dropoff callback
+        this.npcManager.onBusserDropoff = this.onBusserDropoff.bind(this);
+    }
+    
+    /**
+     * Called when a busser drops off dishes
+     * @param {number} zoneIndex - 0 = primary intake, 1+ = overflow zones
+     */
+    onBusserDropoff(zoneIndex) {
+        // Spawn 1-3 dishes at the appropriate zone
+        const dishCount = 1 + Math.floor(Math.random() * 2);
+        
+        if (zoneIndex === 0) {
+            // Primary intake
+            for (let i = 0; i < dishCount; i++) {
+                this.game.spawnDish();
+            }
+        } else {
+            // Overflow zone
+            const overflowIndex = zoneIndex - 1;
+            const capacity = OVERFLOW_ZONES[`overflow${zoneIndex}`]?.capacity || 3;
+            
+            if (this.overflowState.counts[overflowIndex] < capacity) {
+                this.overflowState.counts[overflowIndex] += dishCount;
+                this.overflowState.counts[overflowIndex] = Math.min(
+                    this.overflowState.counts[overflowIndex], 
+                    capacity
+                );
+                this.overflowState.showWarning = true;
+            }
+        }
+        
+        this.updateIntakeDisplay();
     }
     
     setupInput() {
@@ -215,26 +260,84 @@ class AvatarGame {
         // Cooldown check
         if (now - this.lastBumpTime < this.bumpCooldown) return;
         
-        const collidedNPC = this.npcManager.checkPlayerCollision(this.character);
+        const collision = this.npcManager.checkPlayerCollision(this.character);
         
-        if (collidedNPC) {
+        if (collision) {
+            const { npc, type, overlap } = collision;
             this.lastBumpTime = now;
             
-            // Apply stun to player
-            this.character.applyStun(collidedNPC.type);
-            
-            // Show feedback
-            this.showFeedback(this.character.lastNPCBumpMessage, 'warning');
+            // Handle collision based on type
+            switch (type) {
+                case COLLISION_TYPE.LIGHT_BUMP:
+                    // Just slow down, no stun
+                    this.character.vx *= 0.5;
+                    this.character.vy *= 0.5;
+                    this.showFeedback('Watch your step!', 'info');
+                    break;
+                    
+                case COLLISION_TYPE.HARD_COLLISION:
+                    // Drop dish if carrying, apply stun
+                    if (this.character.heldItem) {
+                        this.dropHeldItem();
+                        this.showFeedback('Dropped the dish!', 'error');
+                    }
+                    this.character.applyStun(npc.type);
+                    this.showFeedback(this.character.lastNPCBumpMessage, 'warning');
+                    break;
+                    
+                case COLLISION_TYPE.HEAD_ON:
+                    // Both drop items, chaos moment!
+                    if (this.character.heldItem) {
+                        this.dropHeldItem();
+                    }
+                    // NPC also drops their dish
+                    if (npc.carryingDish) {
+                        npc.carryingDish = false;
+                    }
+                    this.character.applyStun(npc.type);
+                    this.showFeedback('💥 CRASH! Dishes everywhere!', 'error');
+                    // Spawn some visual chaos (optional effect)
+                    break;
+                    
+                default:
+                    // Fallback to light bump
+                    this.character.vx *= 0.5;
+                    this.character.vy *= 0.5;
+            }
             
             // Play bump sound (if available)
             // audio.playBump?.();
         }
     }
     
+    /**
+     * Drop the currently held item (goes back to intake)
+     */
+    dropHeldItem() {
+        if (this.character.heldItem) {
+            // Add back to intake
+            this.game.intake.unshift(this.character.heldItem);
+            this.character.heldItem = null;
+            this.game.heldDish = null;
+            audio.playDishPickup();
+            this.updateIntakeDisplay();
+        }
+    }
+    
     render() {
+        // Update NPC manager with current intake state
+        this.npcManager.setIntakeState(
+            this.game.intake.length,
+            this.overflowState.counts[0],
+            this.overflowState.counts[1]
+        );
+        
         this.renderer.render(this.kitchen, this.character, {
             heldItem: this.game.heldDish,
-            npcs: this.npcManager.getAll()
+            npcs: this.npcManager.getAll(),
+            overflowState: this.overflowState,
+            restaurantState: this.npcManager.getRestaurantState(),
+            showNPCProgress: this.settings.showNPCProgress
         });
         
         // Debug overlay
@@ -283,16 +386,57 @@ class AvatarGame {
             this.game.heldDish = null;
             audio.playDishPickup();
         } else if (this.game.intake.length > 0) {
-            // Pick up dish
+            // Pick up dish from primary intake
             const dish = this.game.intake.shift();
             this.character.heldItem = dish;
             this.game.heldDish = dish;
             audio.playDishPickup();
             this.showFeedback(`Picked up ${dish.name}`, 'info');
+            
+            // If primary intake has room, pull from overflow
+            this.pullFromOverflow();
+        } else if (this.hasOverflowDishes()) {
+            // Pick up from overflow (creates a dish)
+            const overflowIndex = this.overflowState.counts[0] > 0 ? 0 : 1;
+            this.overflowState.counts[overflowIndex]--;
+            
+            // Create a random dish from overflow
+            this.game.spawnDish();
+            const dish = this.game.intake.shift();
+            this.character.heldItem = dish;
+            this.game.heldDish = dish;
+            audio.playDishPickup();
+            this.showFeedback(`Picked up ${dish.name} from overflow`, 'info');
         } else {
             this.showFeedback('No dishes in intake!', 'warning');
         }
         this.updateIntakeDisplay();
+    }
+    
+    /**
+     * Check if there are dishes in overflow zones
+     */
+    hasOverflowDishes() {
+        return this.overflowState.counts[0] > 0 || this.overflowState.counts[1] > 0;
+    }
+    
+    /**
+     * Pull dishes from overflow into primary intake when room is available
+     */
+    pullFromOverflow() {
+        const intakeCapacity = 5; // Max dishes in primary intake
+        
+        while (this.game.intake.length < intakeCapacity && this.hasOverflowDishes()) {
+            // Pull from first available overflow
+            const overflowIndex = this.overflowState.counts[0] > 0 ? 0 : 1;
+            this.overflowState.counts[overflowIndex]--;
+            this.game.spawnDish();
+        }
+        
+        // Check if overflow is now clear
+        if (!this.hasOverflowDishes()) {
+            this.overflowState.showWarning = false;
+        }
     }
     
     interactDishwasher() {

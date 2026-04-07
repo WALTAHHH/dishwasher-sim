@@ -3,9 +3,14 @@
  * Canvas-based rendering for the avatar movement system
  */
 
-import { KITCHEN_CONFIG, STATION_ZONES, OBSTACLES, FLOOR_PATTERN } from './kitchen.js';
+import { KITCHEN_CONFIG, STATION_ZONES, OBSTACLES, FLOOR_PATTERN, OVERFLOW_ZONES } from './kitchen.js';
 import { CHARACTER_CONFIG } from './character.js';
 import { NPC_CONFIG } from './npcs.js';
+
+// Settings for feature flags
+export const RENDER_SETTINGS = {
+    showNPCProgress: true  // Show chef cooking progress bars
+};
 
 export class Renderer {
     constructor(canvas) {
@@ -209,9 +214,9 @@ export class Renderer {
     }
     
     /**
-     * Draw all NPCs (chefs, waiters)
+     * Draw all NPCs (chefs, waiters, bussers)
      */
-    drawNPCs(npcs) {
+    drawNPCs(npcs, showProgress = true) {
         const ctx = this.ctx;
         
         for (const npc of npcs) {
@@ -229,7 +234,7 @@ export class Renderer {
             ctx.arc(npc.x, npc.y - bob, config.width / 2 + 2, 0, Math.PI * 2);
             ctx.fillStyle = config.bodyColor;
             ctx.fill();
-            ctx.strokeStyle = npc.type === 'chef' ? '#ccc' : '#444';
+            ctx.strokeStyle = npc.type === 'chef' ? '#ccc' : npc.type === 'busser' ? '#666' : '#444';
             ctx.lineWidth = 2;
             ctx.stroke();
             
@@ -241,6 +246,19 @@ export class Renderer {
                 ctx.strokeStyle = '#ddd';
                 ctx.lineWidth = 1;
                 ctx.strokeRect(npc.x - 6, npc.y - bob - config.height / 2 - 8, 12, 8);
+                
+                // Progress bar (if cooking and feature enabled)
+                if (showProgress && RENDER_SETTINGS.showNPCProgress && npc.isCooking) {
+                    this.drawProgressBar(npc.x, npc.y - bob - config.height / 2 - 20, 
+                        npc.getCookingProgress(), 30, 6);
+                }
+            } else if (npc.type === 'busser') {
+                // Busser apron (gray with pockets)
+                ctx.fillStyle = '#5a5a6a';
+                ctx.fillRect(npc.x - 8, npc.y - bob + 4, 16, 10);
+                ctx.strokeStyle = '#484858';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(npc.x - 8, npc.y - bob + 4, 16, 10);
             } else {
                 // Waiter bow tie
                 ctx.fillStyle = '#c0392b';
@@ -275,7 +293,128 @@ export class Renderer {
                 ctx.font = '16px sans-serif';
                 ctx.fillText('🍽️', trayX, trayY);
             }
+            
+            // Busser carrying tub indicator
+            if (npc.carryingTub && npc.type === 'busser') {
+                const tubX = npc.x + (npc.facingRight ? 20 : -20);
+                const tubY = npc.y - bob - 10;
+                // Draw a bus tub (gray rectangle with dishes peeking out)
+                ctx.fillStyle = '#555';
+                ctx.fillRect(tubX - 10, tubY - 5, 20, 14);
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(tubX - 10, tubY - 5, 20, 14);
+                // Dishes peeking out
+                ctx.font = '10px sans-serif';
+                ctx.fillText('🍽️', tubX - 4, tubY);
+                ctx.fillText('🥣', tubX + 4, tubY + 2);
+            }
         }
+    }
+    
+    /**
+     * Draw a progress bar
+     */
+    drawProgressBar(x, y, progress, width, height) {
+        const ctx = this.ctx;
+        const barX = x - width / 2;
+        
+        // Background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.fillRect(barX, y, width, height);
+        
+        // Progress fill (green gradient)
+        const gradient = ctx.createLinearGradient(barX, y, barX + width, y);
+        gradient.addColorStop(0, '#2ecc71');
+        gradient.addColorStop(1, '#27ae60');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(barX + 1, y + 1, (width - 2) * progress, height - 2);
+        
+        // Border
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX, y, width, height);
+    }
+    
+    /**
+     * Draw overflow zones (when active)
+     */
+    drawOverflowZones(overflowState) {
+        const ctx = this.ctx;
+        
+        for (const [name, zone] of Object.entries(OVERFLOW_ZONES)) {
+            const index = name === 'overflow1' ? 0 : 1;
+            const count = overflowState?.counts?.[index] || 0;
+            const isActive = count > 0;
+            
+            // Only draw if active or capacity warning
+            if (!isActive && !overflowState?.showWarning) continue;
+            
+            // Zone background (semi-transparent red when active)
+            ctx.fillStyle = isActive ? 'rgba(192, 57, 43, 0.4)' : 'rgba(192, 57, 43, 0.15)';
+            ctx.fillRect(zone.x, zone.y, zone.width, zone.height);
+            
+            // Border (pulsing when overflow is happening)
+            const pulse = isActive ? Math.sin(Date.now() / 200) * 0.3 + 0.7 : 0.5;
+            ctx.strokeStyle = `rgba(231, 76, 60, ${pulse})`;
+            ctx.lineWidth = isActive ? 3 : 2;
+            ctx.setLineDash(isActive ? [] : [5, 5]);
+            ctx.strokeRect(zone.x, zone.y, zone.width, zone.height);
+            ctx.setLineDash([]);
+            
+            // Label
+            const centerX = zone.x + zone.width / 2;
+            const centerY = zone.y + zone.height / 2;
+            
+            if (isActive) {
+                ctx.font = '24px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('⚠️', centerX, centerY - 10);
+                
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillStyle = '#fff';
+                ctx.fillText(`${count}/${zone.capacity}`, centerX, centerY + 15);
+            }
+        }
+    }
+    
+    /**
+     * Draw restaurant state HUD (tables/guests)
+     */
+    drawRestaurantHUD(restaurantState) {
+        const ctx = this.ctx;
+        const x = this.canvas.width - 10;
+        const y = 10;
+        const width = 120;
+        const height = 60;
+        
+        // Background panel
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(x - width, y, width, height);
+        ctx.strokeStyle = '#8e44ad';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - width, y, width, height);
+        
+        // Title
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#8e44ad';
+        ctx.fillText('DINING ROOM', x - width / 2, y + 12);
+        
+        // Tables seated
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#fff';
+        const tables = restaurantState?.tablesSeated || 0;
+        const tablesTotal = restaurantState?.tablesTotal || 10;
+        ctx.fillText(`🍽️ Tables: ${tables}/${tablesTotal}`, x - width + 8, y + 30);
+        
+        // Guests waiting
+        const guests = restaurantState?.guestsWaiting || 0;
+        const guestColor = guests > 5 ? '#e74c3c' : guests > 2 ? '#f39c12' : '#2ecc71';
+        ctx.fillStyle = guestColor;
+        ctx.fillText(`👥 Waiting: ${guests}`, x - width + 8, y + 48);
     }
     
     /**
@@ -314,6 +453,11 @@ export class Renderer {
             ctx.fillText(`${gameState.heldItem.emoji} ${gameState.heldItem.name}`, padding + 10, padding + 34);
         }
         
+        // Restaurant HUD (top-right)
+        if (gameState.restaurantState) {
+            this.drawRestaurantHUD(gameState.restaurantState);
+        }
+        
         // Controls hint (bottom-left)
         ctx.font = '12px sans-serif';
         ctx.textAlign = 'left';
@@ -328,11 +472,18 @@ export class Renderer {
         this.clear();
         this.drawFloor();
         this.drawStations(character.getCurrentStation());
+        
+        // Draw overflow zones (before obstacles so they appear behind counters)
+        if (gameState.overflowState) {
+            this.drawOverflowZones(gameState.overflowState);
+        }
+        
         this.drawObstacles();
         
         // Draw NPCs (if provided)
         if (gameState.npcs) {
-            this.drawNPCs(gameState.npcs);
+            const showProgress = gameState.showNPCProgress ?? RENDER_SETTINGS.showNPCProgress;
+            this.drawNPCs(gameState.npcs, showProgress);
         }
         
         // Draw player on top of NPCs

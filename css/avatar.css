@@ -264,6 +264,97 @@
     color: var(--accent-blue);
 }
 
+/* NPC Progress Bars - Canvas-rendered but HUD elements styled here */
+.npc-progress-bar {
+    position: absolute;
+    width: 30px;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #fff;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.npc-progress-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    transition: width 0.1s linear;
+}
+
+/* Restaurant HUD Panel */
+.restaurant-hud {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #8e44ad;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #fff;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.restaurant-hud h4 {
+    color: #8e44ad;
+    font-size: 10px;
+    text-transform: uppercase;
+    margin: 0 0 6px 0;
+    text-align: center;
+}
+
+.restaurant-hud .stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0;
+}
+
+.restaurant-hud .stat-icon {
+    font-size: 14px;
+}
+
+.restaurant-hud .stat-value {
+    font-weight: bold;
+}
+
+.restaurant-hud .stat-value.warning {
+    color: #f39c12;
+}
+
+.restaurant-hud .stat-value.danger {
+    color: #e74c3c;
+}
+
+/* Overflow Zone Warning */
+.overflow-warning {
+    position: absolute;
+    left: 10px;
+    top: 60px;
+    background: rgba(192, 57, 43, 0.9);
+    border: 2px solid #e74c3c;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #fff;
+    font-family: monospace;
+    font-size: 12px;
+    animation: pulse-warning 1s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { 
+        box-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+    }
+    50% { 
+        box-shadow: 0 0 15px rgba(231, 76, 60, 0.8);
+    }
+}
+
+.overflow-warning .title {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
     #game-screen {
