@@ -158,7 +158,7 @@
                 </div>
             </div>
 
-            <!-- Held Item Display -->
+            <!-- Held Item Display (legacy - cursor follow) -->
             <div id="held-item" class="hidden">
                 <div class="held-dish"></div>
                 <div class="held-info">
@@ -166,9 +166,81 @@
                     <span class="held-status"></span>
                 </div>
             </div>
+            
+            <!-- Carrying Indicator (fixed position for avatar mode) -->
+            <div id="carrying-indicator" class="carrying-indicator hidden">
+                <span class="dish-emoji"></span>
+                <div class="dish-info">
+                    <span class="dish-name"></span>
+                    <span class="dish-status"></span>
+                </div>
+            </div>
+
+            <!-- Zone Prompt (shows when near a station) -->
+            <div id="zone-prompt" class="zone-prompt hidden">
+                <span class="zone-icon"></span>
+                <span class="zone-text"></span>
+            </div>
 
             <!-- Feedback Toast -->
             <div id="feedback-toast" class="feedback-toast hidden"></div>
+        </div>
+
+        <!-- Dishwasher Modal (Tetris packing popup) -->
+        <div id="dishwasher-modal" class="modal dishwasher-modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content dishwasher-modal-content">
+                <div class="modal-header">
+                    <h2>🫧 Dishwasher</h2>
+                    <button id="btn-modal-close" class="modal-close-btn">✕</button>
+                </div>
+                
+                <div class="modal-body">
+                    <!-- Tetris Grid -->
+                    <div class="modal-grid-container">
+                        <div class="modal-dishwasher-grid" id="modal-grid"></div>
+                        <div class="modal-grid-info">
+                            <div class="grid-usage">
+                                <span class="label">Load:</span>
+                                <div class="usage-bar">
+                                    <div class="usage-fill" id="modal-grid-usage-fill"></div>
+                                </div>
+                                <span id="modal-grid-usage-text">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Held dish preview -->
+                    <div class="modal-held-preview" id="modal-held-preview">
+                        <div class="held-dish-display"></div>
+                        <div class="held-dish-info">
+                            <span class="held-name"></span>
+                            <span class="held-hint">WASD to move, R to rotate, Space to place</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Controls -->
+                    <div class="modal-controls">
+                        <button id="btn-modal-run-cycle" class="btn-run-cycle" disabled>
+                            Run Cycle <kbd>Enter</kbd>
+                        </button>
+                        <div class="cycle-timer modal-cycle-timer hidden" id="modal-cycle-timer">
+                            <div class="timer-bar" id="modal-timer-bar"></div>
+                            <span class="timer-text">Washing...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Dish compatibility info -->
+                    <div class="modal-dish-info">
+                        <span class="can-wash">✓ Plates, Bowls, Cups</span>
+                        <span class="cannot-wash">✗ Pans, Glass need hand washing</span>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <span class="modal-hint">Press <kbd>Escape</kbd> to close</span>
+                </div>
+            </div>
         </div>
 
         <!-- Tutorial Overlay -->

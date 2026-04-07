@@ -712,3 +712,449 @@ button:disabled {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-blue);
 }
+
+/* ============================
+   ZONE PROMPT (Station Proximity)
+   ============================ */
+
+.zone-prompt {
+    position: fixed;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26, 26, 46, 0.95);
+    border: 2px solid var(--accent-blue);
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    z-index: 50;
+    animation: prompt-appear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(74, 159, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.zone-prompt.hidden {
+    display: none;
+}
+
+.zone-prompt .zone-icon {
+    font-size: 2rem;
+}
+
+.zone-prompt .zone-text {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.zone-prompt kbd {
+    background: var(--accent-blue);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-family: inherit;
+    font-weight: bold;
+    margin: 0 0.25rem;
+}
+
+@keyframes prompt-appear {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+/* ============================
+   DISHWASHER MODAL (Tetris Popup)
+   ============================ */
+
+.dishwasher-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dishwasher-modal.hidden {
+    display: none;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.dishwasher-modal-content {
+    position: relative;
+    background: linear-gradient(145deg, var(--bg-medium) 0%, var(--bg-dark) 100%);
+    border: 3px solid var(--accent-teal);
+    border-radius: 16px;
+    padding: 0;
+    max-width: 500px;
+    width: 90%;
+    animation: modal-appear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(15, 155, 142, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--bg-light);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: 2px solid var(--text-secondary);
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: white;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-grid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-dishwasher-grid {
+    display: grid;
+    grid-template-columns: repeat(8, var(--grid-cell));
+    grid-template-rows: repeat(6, var(--grid-cell));
+    gap: var(--grid-gap);
+    background: linear-gradient(145deg, #2a2a3e, #252538);
+    padding: 0.75rem;
+    border-radius: 12px;
+    border: 3px solid #3a3a4e;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.modal-dishwasher-grid.running {
+    animation: dishwasher-vibrate 0.1s linear infinite;
+    border-color: var(--accent-teal);
+}
+
+.modal-dishwasher-grid .grid-cell {
+    background: var(--bg-dark);
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.modal-dishwasher-grid .grid-cell:hover {
+    background: var(--bg-light);
+}
+
+.modal-dishwasher-grid .grid-cell.cursor {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: -2px;
+    background: rgba(74, 159, 255, 0.15);
+}
+
+.modal-dishwasher-grid .grid-cell.occupied {
+    background: var(--accent-teal);
+    box-shadow: 0 2px 8px rgba(15, 155, 142, 0.4);
+}
+
+.modal-dishwasher-grid .grid-cell.occupied.clean {
+    background: linear-gradient(135deg, var(--accent-teal) 0%, #13c4b0 100%);
+}
+
+.modal-dishwasher-grid .grid-cell.preview {
+    background: rgba(74, 159, 255, 0.2);
+    border: 2px dashed var(--accent-blue);
+    animation: preview-pulse 0.8s ease infinite;
+}
+
+.modal-dishwasher-grid .grid-cell.preview.valid {
+    background: rgba(39, 174, 96, 0.2);
+    border-color: var(--success);
+}
+
+.modal-dishwasher-grid .grid-cell.preview.invalid {
+    background: rgba(231, 76, 60, 0.2);
+    border-color: var(--danger);
+}
+
+.modal-grid-info {
+    width: 100%;
+    max-width: 350px;
+}
+
+.modal-grid-info .grid-usage {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.modal-grid-info .usage-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-dark);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.modal-grid-info .usage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-teal), #13c4b0);
+    transition: width 0.2s ease;
+}
+
+/* Held dish preview in modal */
+.modal-held-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-light);
+    border-radius: 8px;
+    border-left: 4px solid var(--accent-blue);
+}
+
+.modal-held-preview.hidden {
+    display: none;
+}
+
+.modal-held-preview .held-dish-display {
+    font-size: 2rem;
+    background: rgba(74, 159, 255, 0.15);
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.modal-held-preview .held-dish-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.modal-held-preview .held-name {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.modal-held-preview .held-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Modal controls */
+.modal-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-controls .btn-run-cycle {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    background: linear-gradient(135deg, var(--accent-teal) 0%, #0a7a6f 100%);
+    border: 2px solid var(--accent-teal);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-controls .btn-run-cycle:hover:not(:disabled) {
+    background: linear-gradient(135deg, #13c4b0 0%, var(--accent-teal) 100%);
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(15, 155, 142, 0.4);
+}
+
+.modal-controls .btn-run-cycle:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.modal-cycle-timer {
+    width: 200px;
+    height: 10px;
+    background: var(--bg-dark);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.modal-cycle-timer.hidden {
+    display: none;
+}
+
+.modal-cycle-timer .timer-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-teal), #13c4b0);
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+/* Dish compatibility info */
+.modal-dish-info {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--bg-light);
+}
+
+.modal-dish-info .can-wash {
+    color: var(--success);
+}
+
+.modal-dish-info .cannot-wash {
+    color: var(--warning);
+}
+
+.modal-footer {
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--bg-light);
+    text-align: center;
+}
+
+.modal-footer .modal-hint {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.modal-footer kbd {
+    background: var(--bg-light);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+@keyframes modal-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Modal close animation */
+.dishwasher-modal.closing .dishwasher-modal-content {
+    animation: modal-disappear 0.2s ease forwards;
+}
+
+@keyframes modal-disappear {
+    to {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+}
+
+/* ============================
+   CARRYING INDICATOR
+   ============================ */
+
+.carrying-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(26, 26, 46, 0.95);
+    border: 2px solid var(--accent-warm);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    z-index: 50;
+    animation: slide-in-right 0.3s ease;
+}
+
+.carrying-indicator.hidden {
+    display: none;
+}
+
+.carrying-indicator .dish-emoji {
+    font-size: 1.5rem;
+}
+
+.carrying-indicator .dish-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.carrying-indicator .dish-name {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.carrying-indicator .dish-status {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.carrying-indicator .dish-status.dirty {
+    color: var(--warning);
+}
+
+.carrying-indicator .dish-status.clean {
+    color: var(--success);
+}
+
+@keyframes slide-in-right {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
