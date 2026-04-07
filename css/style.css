@@ -1,0 +1,448 @@
+/* Dishwasher Simulator - Core Styles */
+
+:root {
+    --bg-dark: #1a1a2e;
+    --bg-medium: #16213e;
+    --bg-light: #1f3460;
+    --accent-blue: #4a9fff;
+    --accent-teal: #0f9b8e;
+    --accent-warm: #f39c12;
+    --text-primary: #e8e8e8;
+    --text-secondary: #a0a0a0;
+    --success: #27ae60;
+    --warning: #f39c12;
+    --danger: #e74c3c;
+    
+    /* Dish colors */
+    --dish-plate: #f5f5f5;
+    --dish-bowl: #e8e8e8;
+    --dish-cup: #d4edda;
+    --dish-pan: #4a4a4a;
+    
+    /* Grid */
+    --grid-cell: 40px;
+    --grid-gap: 2px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* Screens */
+.screen {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* Title Screen */
+#title-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-medium) 100%);
+}
+
+#title-screen h1 {
+    font-size: 3rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+}
+
+.tagline {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: 1.2rem;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+button {
+    background: var(--bg-light);
+    border: 2px solid var(--accent-blue);
+    color: var(--text-primary);
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+}
+
+button:hover:not(:disabled) {
+    background: var(--accent-blue);
+    transform: scale(1.02);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: var(--text-secondary);
+}
+
+.hint {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 2rem;
+}
+
+/* Game Screen */
+#game-screen {
+    display: grid;
+    grid-template-columns: 200px 1fr 200px;
+    grid-template-rows: 1fr 1fr auto;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-medium);
+}
+
+/* Stations */
+.station {
+    background: var(--bg-light);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.station h3 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--bg-medium);
+    padding-bottom: 0.5rem;
+}
+
+/* Intake Station */
+#station-intake {
+    grid-column: 1;
+    grid-row: 1 / 3;
+}
+
+.intake-queue {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Dishwasher Station */
+#station-dishwasher {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+}
+
+.dishwasher-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.dishwasher-grid {
+    display: grid;
+    grid-template-columns: repeat(8, var(--grid-cell));
+    grid-template-rows: repeat(6, var(--grid-cell));
+    gap: var(--grid-gap);
+    background: #2a2a3e;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 3px solid #3a3a4e;
+}
+
+.grid-cell {
+    background: var(--bg-dark);
+    border-radius: 2px;
+    transition: background 0.15s ease;
+}
+
+.grid-cell:hover {
+    background: var(--bg-light);
+}
+
+.grid-cell.occupied {
+    background: var(--accent-teal);
+}
+
+.grid-cell.preview {
+    background: rgba(74, 159, 255, 0.3);
+    border: 2px dashed var(--accent-blue);
+}
+
+.grid-cell.invalid {
+    background: rgba(231, 76, 60, 0.3);
+}
+
+.dishwasher-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#btn-run-cycle {
+    padding: 0.75rem 2rem;
+}
+
+.cycle-timer {
+    width: 200px;
+    height: 8px;
+    background: var(--bg-dark);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.cycle-timer.hidden {
+    display: none;
+}
+
+.timer-bar {
+    height: 100%;
+    background: var(--accent-teal);
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+/* Drying Station */
+#station-drying {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.drying-slots {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.drying-slot {
+    background: var(--bg-dark);
+    border-radius: 4px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Storage Station */
+#station-storage {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.storage-shelves {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.shelf {
+    background: var(--bg-dark);
+    padding: 0.75rem;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.shelf:hover {
+    background: var(--bg-medium);
+    color: var(--text-primary);
+}
+
+.shelf .count {
+    font-weight: bold;
+    color: var(--accent-blue);
+}
+
+/* HUD */
+#hud {
+    grid-column: 1 / 4;
+    grid-row: 3;
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    padding: 1rem;
+    background: var(--bg-dark);
+    border-radius: 8px;
+}
+
+.hud-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.hud-item .label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.hud-item span:last-child {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Held Item */
+#held-item {
+    position: fixed;
+    pointer-events: none;
+    z-index: 100;
+}
+
+#held-item.hidden {
+    display: none;
+}
+
+/* Cursor */
+#cursor {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--accent-blue);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease;
+}
+
+/* Dish Items */
+.dish {
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: grab;
+    transition: transform 0.15s ease;
+}
+
+.dish:hover {
+    transform: scale(1.05);
+}
+
+.dish.plate {
+    background: var(--dish-plate);
+    color: #333;
+}
+
+.dish.bowl {
+    background: var(--dish-bowl);
+    color: #333;
+}
+
+.dish.cup {
+    background: var(--dish-cup);
+    color: #333;
+}
+
+.dish.pan {
+    background: var(--dish-pan);
+    color: #fff;
+}
+
+/* In intake queue */
+.intake-queue .dish {
+    padding: 0.75rem;
+    width: 100%;
+}
+
+/* Results Screen */
+#results-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    background: var(--bg-dark);
+}
+
+.results {
+    display: flex;
+    gap: 3rem;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat .label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.stat span:last-child {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+#result-rating {
+    font-size: 2.5rem !important;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.warning {
+    animation: pulse 0.5s ease infinite;
+}
+
+.danger {
+    animation: shake 0.3s ease infinite;
+    border-color: var(--danger) !important;
+}
+
+/* Clean reveal animation */
+@keyframes sparkle {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(1); }
+}
+
+.clean-sparkle {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: sparkle 0.6s ease forwards;
+}
