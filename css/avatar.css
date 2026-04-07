@@ -1,0 +1,297 @@
+/* Avatar Mode - Additional Styles */
+
+/* Game screen layout */
+#game-screen {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    grid-template-rows: 1fr auto;
+    gap: 0;
+    padding: 0;
+}
+
+/* Kitchen canvas container */
+#kitchen-container {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-dark);
+    position: relative;
+    overflow: hidden;
+}
+
+#kitchen-canvas {
+    border: 3px solid var(--bg-light);
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Side panel */
+#side-panel {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    background: var(--bg-medium);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-left: 2px solid var(--bg-light);
+    overflow-y: auto;
+}
+
+.panel-section {
+    background: var(--bg-light);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.panel-section h3 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.panel-section p {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+/* Held item display */
+#held-item-display {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 2px solid var(--accent-blue);
+    animation: glow-pulse 2s ease infinite;
+}
+
+@keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(74, 159, 255, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(74, 159, 255, 0.6); }
+}
+
+.held-icon {
+    font-size: 2rem;
+    background: rgba(74, 159, 255, 0.2);
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.held-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.held-name {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.held-status {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.held-status.dirty {
+    color: var(--warning);
+}
+
+.held-status.clean {
+    color: var(--success);
+}
+
+/* Storage shelves compact */
+#storage-preview .storage-shelves {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+#storage-preview .shelf {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--bg-dark);
+    padding: 0.5rem;
+    border-radius: 4px;
+    min-width: 60px;
+}
+
+#storage-preview .shelf-icon {
+    font-size: 1.2rem;
+}
+
+#storage-preview .shelf-count {
+    font-weight: bold;
+    color: var(--accent-blue);
+}
+
+/* HUD for avatar mode */
+#game-screen #hud {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    padding: 1rem;
+    background: var(--bg-dark);
+    border-top: 2px solid var(--bg-light);
+}
+
+/* Mode tag on title */
+.mode-tag {
+    color: var(--accent-teal);
+    font-size: 1rem;
+    margin-top: -1rem;
+    animation: fade-in 1s ease 0.4s both;
+}
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: var(--bg-medium);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 2px solid var(--accent-blue);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+}
+
+.modal h2 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.modal-subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+/* Dishwasher modal grid */
+.dishwasher-modal-content .dishwasher-grid {
+    display: grid;
+    grid-template-columns: repeat(8, var(--grid-cell));
+    grid-template-rows: repeat(6, var(--grid-cell));
+    gap: var(--grid-gap);
+    background: linear-gradient(145deg, #2a2a3e, #252538);
+    padding: 1rem;
+    border-radius: 12px;
+    margin: 0 auto 1.5rem;
+}
+
+.modal-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.modal-controls button {
+    padding: 0.75rem 1.5rem;
+}
+
+#modal-run-cycle {
+    background: linear-gradient(135deg, var(--accent-teal) 0%, #0a7a6f 100%);
+    border-color: var(--accent-teal);
+}
+
+#modal-run-cycle:hover:not(:disabled) {
+    background: linear-gradient(135deg, #13c4b0 0%, var(--accent-teal) 100%);
+}
+
+.modal-close {
+    background: var(--bg-light);
+    border-color: var(--text-secondary);
+}
+
+/* Feedback toast positioning */
+#game-screen .feedback-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-dark);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: 2px solid var(--accent-blue);
+    z-index: 500;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.feedback-toast.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+    pointer-events: none;
+}
+
+.feedback-toast.success {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.feedback-toast.warning {
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.feedback-toast.error {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.feedback-toast.info {
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    #game-screen {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    #side-panel {
+        grid-column: 1;
+        grid-row: 1;
+        flex-direction: row;
+        border-left: none;
+        border-bottom: 2px solid var(--bg-light);
+        overflow-x: auto;
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+    
+    .panel-section {
+        padding: 0.5rem 0.75rem;
+        min-width: max-content;
+    }
+    
+    #kitchen-container {
+        grid-row: 2;
+    }
+    
+    #game-screen #hud {
+        grid-row: 3;
+    }
+}

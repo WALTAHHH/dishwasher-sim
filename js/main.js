@@ -300,9 +300,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start title screen
     ui.showScreen('title');
     
+    // Carrying indicator updates
+    const carryingIndicator = document.getElementById('carrying-indicator');
+    
+    // Override game update to include carrying indicator
+    const baseOnUpdate = game.onUpdate;
+    game.onUpdate = () => {
+        // Call existing update
+        if (baseOnUpdate) baseOnUpdate();
+        
+        // Update carrying indicator
+        if (carryingIndicator) {
+            if (game.heldDish) {
+                carryingIndicator.classList.remove('hidden');
+                const emoji = carryingIndicator.querySelector('.dish-emoji');
+                const name = carryingIndicator.querySelector('.dish-name');
+                const status = carryingIndicator.querySelector('.dish-status');
+                
+                if (emoji) emoji.textContent = game.heldDish.emoji;
+                if (name) name.textContent = game.heldDish.name;
+                if (status) {
+                    status.textContent = game.heldDish.dirty ? 'Dirty' : 'Clean';
+                    status.className = 'dish-status ' + (game.heldDish.dirty ? 'dirty' : 'clean');
+                }
+            } else {
+                carryingIndicator.classList.add('hidden');
+            }
+        }
+        
+        // Update modal grid if open
+        if (modalManager.isBlocking()) {
+            renderModalGrid();
+        }
+    };
+    
     console.log('🧽 Dishwasher Simulator loaded');
-    console.log('🎮 Controls: WASD/Arrows=move, Space=grab, R/Shift=rotate, Tab=switch station');
-    console.log('🔢 Quick switch: 1=Intake, 2=Dishwasher, 3=Drying, 4=Storage');
-    console.log('❓ Press ? for help');
-    console.log('🔊 Press M to toggle sound');
+    console.log('🏃 Avatar Mode: Walk to stations, press Space to interact');
+    console.log('🫧 Dishwasher opens as modal for Tetris packing');
+    console.log('🎮 Legacy: 1-4=stations, WASD=move, Space=grab, R=rotate');
+    console.log('❓ Press ? for help | M=mute');
+    console.log('📍 API: window.dishwasherGame for avatar integration');
 });

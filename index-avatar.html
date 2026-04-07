@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dishwasher Simulator - Avatar Mode</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/avatar.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Title Screen -->
+        <div id="title-screen" class="screen active">
+            <h1>🧽 Dishwasher Simulator</h1>
+            <p class="tagline">Clean dishes. Clear mind.</p>
+            <p class="mode-tag">🧑‍🍳 Avatar Mode</p>
+            <div class="menu">
+                <button id="btn-start">Start Shift</button>
+            </div>
+            <div class="controls-hint">
+                <h4>Controls</h4>
+                <div class="hint-row"><kbd>WASD</kbd> Walk around kitchen</div>
+                <div class="hint-row"><kbd>Space</kbd> Interact with station</div>
+                <div class="hint-row"><kbd>R</kbd> Rotate held dish</div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <!-- Kitchen Canvas (main view) -->
+            <div id="kitchen-container">
+                <canvas id="kitchen-canvas"></canvas>
+            </div>
+
+            <!-- Side Panel -->
+            <div id="side-panel">
+                <!-- Held Item Display -->
+                <div id="held-item-display" class="panel-section hidden">
+                    <div class="held-icon">🍽️</div>
+                    <div class="held-info">
+                        <span class="held-name">Plate</span>
+                        <span class="held-status dirty">Dirty</span>
+                    </div>
+                </div>
+
+                <!-- Station Info -->
+                <div id="station-info" class="panel-section">
+                    <h3>📥 Intake</h3>
+                    <p id="intake-count">0 dishes</p>
+                </div>
+
+                <!-- Storage Preview -->
+                <div id="storage-preview" class="panel-section">
+                    <h3>📦 Storage</h3>
+                    <div class="storage-shelves">
+                        <div class="shelf" data-type="plate">
+                            <span class="shelf-icon">🍽️</span>
+                            <span class="shelf-count">0</span>
+                        </div>
+                        <div class="shelf" data-type="bowl">
+                            <span class="shelf-icon">🥣</span>
+                            <span class="shelf-count">0</span>
+                        </div>
+                        <div class="shelf" data-type="cup">
+                            <span class="shelf-icon">☕</span>
+                            <span class="shelf-count">0</span>
+                        </div>
+                        <div class="shelf" data-type="pan">
+                            <span class="shelf-icon">🍳</span>
+                            <span class="shelf-count">0</span>
+                        </div>
+                        <div class="shelf" data-type="glass">
+                            <span class="shelf-icon">🍷</span>
+                            <span class="shelf-count">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drying Info -->
+                <div id="drying-info" class="panel-section">
+                    <h3>💨 Drying Rack</h3>
+                    <p id="drying-slots">4/4 slots available</p>
+                </div>
+            </div>
+
+            <!-- HUD -->
+            <div id="hud">
+                <div class="hud-item">
+                    <span class="label">Wave</span>
+                    <span id="hud-wave">1/3</span>
+                </div>
+                <div class="hud-item hud-time">
+                    <span class="label">Time</span>
+                    <span id="hud-time">3:00</span>
+                </div>
+                <div class="hud-item">
+                    <span class="label">Cleaned</span>
+                    <span id="hud-clean">0</span>
+                </div>
+            </div>
+
+            <!-- Feedback Toast -->
+            <div id="feedback-toast" class="feedback-toast hidden"></div>
+        </div>
+
+        <!-- Dishwasher Modal -->
+        <div id="dishwasher-modal" class="modal hidden">
+            <div class="modal-content dishwasher-modal-content">
+                <h2>🫧 Dishwasher</h2>
+                <p class="modal-subtitle">Pack dishes efficiently! Click to place/pickup.</p>
+                
+                <div id="modal-dishwasher-grid" class="dishwasher-grid"></div>
+                
+                <div class="modal-controls">
+                    <button id="modal-run-cycle" disabled>Run Cycle</button>
+                    <button class="modal-close">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <h2 id="results-title">Shift Complete!</h2>
+            <div class="results">
+                <div class="stat main-stat">
+                    <span class="label">Dishes Cleaned</span>
+                    <span id="result-cleaned">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Efficiency</span>
+                    <span id="result-efficiency">0%</span>
+                </div>
+                <div class="stat rating-stat">
+                    <span class="label">Rating</span>
+                    <span id="result-rating">⭐⭐⭐</span>
+                </div>
+            </div>
+            <div class="results-buttons">
+                <button id="btn-retry">Try Again</button>
+                <button id="btn-menu">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/avatar-main.js"></script>
+</body>
+</html>
