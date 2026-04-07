@@ -1,50 +1,59 @@
 /**
  * Character/Avatar System
- * Handles WASD movement, collision response, and character state
+ * Grid-based movement with tap-to-step and hold-to-walk mechanics
  */
 
 import { KITCHEN_CONFIG } from './kitchen.js';
 
 export const CHARACTER_CONFIG = {
-    // Movement
-    speed: 200,          // pixels per second
-    acceleration: 1200,  // pixels per second squared
-    friction: 800,       // deceleration when not moving
+    // Grid movement
+    gridSize: 40,           // pixels per grid cell (matches kitchen tile)
+    moveTime: 0.15,         // seconds to move one cell (smooth interpolation)
+    holdThreshold: 180,     // ms before continuous movement kicks in
+    continuousDelay: 350,   // ms between steps when holding (2.8 cells/sec)
     
     // Hitbox
     width: 32,
     height: 32,
     
     // Visual - Dishwasher (the person washing dishes!)
-    emoji: '🧽',         // Sponge - represents the dishwasher
-    bodyColor: '#5a9bd4', // Blue apron
-    bobSpeed: 8,         // walking animation bob speed
-    bobAmount: 3,        // walking animation bob pixels
+    emoji: '🧽',            // Sponge - represents the dishwasher
+    bodyColor: '#5a9bd4',   // Blue apron
+    bobSpeed: 8,            // walking animation bob speed
+    bobAmount: 3,           // walking animation bob pixels
     
     // NPC collision
-    stunDuration: 0.5,   // seconds stunned after NPC bump
-    stunSlowdown: 0.3    // movement multiplier while stunned
+    stunDuration: 0.5,      // seconds stunned after NPC bump
+    stunSlowdown: 1.5       // movement time multiplier while stunned
 };
 
 export class Character {
     constructor(kitchen) {
         this.kitchen = kitchen;
         
-        // Position
+        // Grid position (in cells)
         const spawn = kitchen.getSpawnPoint();
-        this.x = spawn.x;
-        this.y = spawn.y;
+        this.gridX = Math.round(spawn.x / CHARACTER_CONFIG.gridSize);
+        this.gridY = Math.round(spawn.y / CHARACTER_CONFIG.gridSize);
         
-        // Velocity
-        this.vx = 0;
-        this.vy = 0;
+        // Actual render position (for smooth interpolation)
+        this.x = this.gridX * CHARACTER_CONFIG.gridSize;
+        this.y = this.gridY * CHARACTER_CONFIG.gridSize;
         
-        // Input state
+        // Movement interpolation
+        this.isMoving = false;
+        this.moveProgress = 0;      // 0 to 1
+        this.fromX = this.x;
+        this.fromY = this.y;
+        this.toX = this.x;
+        this.toY = this.y;
+        
+        // Input state with timing
         this.input = {
-            up: false,
-            down: false,
-            left: false,
-            right: false
+            up: { pressed: false, startTime: 0, lastStep: 0 },
+            down: { pressed: false, startTime: 0, lastStep: 0 },
+            left: { pressed: false, startTime: 0, lastStep: 0 },
+            right: { pressed: false, startTime: 0, lastStep: 0 }
         };
         
         // Animation state
@@ -62,13 +71,109 @@ export class Character {
         this.stunTime = 0;
         this.isStunned = false;
         this.lastNPCBumpMessage = '';
+        
+        // Movement queue - allows buffering next direction
+        this.queuedDirection = null;
     }
     
     /**
      * Set input state from key events
      */
     setInput(direction, pressed) {
-        this.input[direction] = pressed;
+        const now = performance.now();
+        const inputState = this.input[direction];
+        
+        if (pressed && !inputState.pressed) {
+            // Key just pressed
+            inputState.pressed = true;
+            inputState.startTime = now;
+            inputState.lastStep = 0;
+            
+            // Try to move immediately (tap response)
+            this.tryMove(direction);
+        } else if (!pressed && inputState.pressed) {
+            // Key released
+            inputState.pressed = false;
+            inputState.startTime = 0;
+            inputState.lastStep = 0;
+        }
+    }
+    
+    /**
+     * Get direction vector for a direction name
+     */
+    getDirectionVector(direction) {
+        switch (direction) {
+            case 'up': return { dx: 0, dy: -1 };
+            case 'down': return { dx: 0, dy: 1 };
+            case 'left': return { dx: -1, dy: 0 };
+            case 'right': return { dx: 1, dy: 0 };
+            default: return { dx: 0, dy: 0 };
+        }
+    }
+    
+    /**
+     * Attempt to move one cell in a direction
+     */
+    tryMove(direction) {
+        // Can't start new move while already moving
+        if (this.isMoving) {
+            // Queue this direction for when current move completes
+            this.queuedDirection = direction;
+            return false;
+        }
+        
+        const config = CHARACTER_CONFIG;
+        const { dx, dy } = this.getDirectionVector(direction);
+        
+        if (dx === 0 && dy === 0) return false;
+        
+        // Calculate target grid position
+        const targetGridX = this.gridX + dx;
+        const targetGridY = this.gridY + dy;
+        
+        // Convert to pixel position (center of cell)
+        const targetX = targetGridX * config.gridSize;
+        const targetY = targetGridY * config.gridSize;
+        
+        // Check collision
+        if (!this.kitchen.canMoveTo(targetX, targetY, config.width, config.height)) {
+            return false;
+        }
+        
+        // Update facing direction
+        if (dx > 0) this.facingRight = true;
+        if (dx < 0) this.facingRight = false;
+        
+        // Start the move
+        this.isMoving = true;
+        this.moveProgress = 0;
+        this.fromX = this.x;
+        this.fromY = this.y;
+        this.toX = targetX;
+        this.toY = targetY;
+        this.gridX = targetGridX;
+        this.gridY = targetGridY;
+        
+        return true;
+    }
+    
+    /**
+     * Get the currently active direction (prioritizes most recent)
+     */
+    getActiveDirection() {
+        const now = performance.now();
+        let activeDir = null;
+        let latestTime = 0;
+        
+        for (const [dir, state] of Object.entries(this.input)) {
+            if (state.pressed && state.startTime > latestTime) {
+                latestTime = state.startTime;
+                activeDir = dir;
+            }
+        }
+        
+        return activeDir;
     }
     
     /**
@@ -77,6 +182,7 @@ export class Character {
      */
     update(dt) {
         const config = CHARACTER_CONFIG;
+        const now = performance.now();
         
         // Update stun timer
         if (this.stunTime > 0) {
@@ -87,73 +193,66 @@ export class Character {
             }
         }
         
-        // Calculate target velocity from input
-        let targetVx = 0;
-        let targetVy = 0;
-        
-        if (this.input.left) targetVx -= 1;
-        if (this.input.right) targetVx += 1;
-        if (this.input.up) targetVy -= 1;
-        if (this.input.down) targetVy += 1;
-        
-        // Normalize diagonal movement
-        const inputMag = Math.sqrt(targetVx * targetVx + targetVy * targetVy);
-        if (inputMag > 0) {
-            // Apply stun slowdown if stunned
-            const speedMultiplier = this.isStunned ? config.stunSlowdown : 1;
-            targetVx = (targetVx / inputMag) * config.speed * speedMultiplier;
-            targetVy = (targetVy / inputMag) * config.speed * speedMultiplier;
+        // Handle move interpolation
+        if (this.isMoving) {
+            const moveSpeed = this.isStunned ? config.moveTime * config.stunSlowdown : config.moveTime;
+            this.moveProgress += dt / moveSpeed;
+            
+            if (this.moveProgress >= 1) {
+                // Movement complete - snap to grid
+                this.moveProgress = 1;
+                this.x = this.toX;
+                this.y = this.toY;
+                this.isMoving = false;
+                
+                // Check for queued direction first
+                if (this.queuedDirection) {
+                    const queuedDir = this.queuedDirection;
+                    this.queuedDirection = null;
+                    if (this.input[queuedDir]?.pressed) {
+                        this.tryMove(queuedDir);
+                    }
+                }
+                
+                // If no queued move started, check for held key continuous movement
+                if (!this.isMoving) {
+                    const activeDir = this.getActiveDirection();
+                    if (activeDir) {
+                        const state = this.input[activeDir];
+                        const holdDuration = now - state.startTime;
+                        
+                        // Only continue if held long enough
+                        if (holdDuration > config.holdThreshold) {
+                            this.tryMove(activeDir);
+                            state.lastStep = now;
+                        }
+                    }
+                }
+            } else {
+                // Smooth interpolation with easing (ease-out for snappy feel)
+                const t = this.easeOutQuad(this.moveProgress);
+                this.x = this.fromX + (this.toX - this.fromX) * t;
+                this.y = this.fromY + (this.toY - this.fromY) * t;
+            }
+            
             this.isWalking = true;
         } else {
+            // Not moving - check for held keys that should trigger continuous movement
+            const activeDir = this.getActiveDirection();
+            if (activeDir) {
+                const state = this.input[activeDir];
+                const holdDuration = now - state.startTime;
+                const timeSinceLastStep = now - state.lastStep;
+                
+                // Continuous movement after hold threshold
+                if (holdDuration > config.holdThreshold && timeSinceLastStep > config.continuousDelay) {
+                    if (this.tryMove(activeDir)) {
+                        state.lastStep = now;
+                    }
+                }
+            }
+            
             this.isWalking = false;
-        }
-        
-        // Track facing direction
-        if (targetVx > 0) this.facingRight = true;
-        if (targetVx < 0) this.facingRight = false;
-        
-        // Apply acceleration/friction
-        if (this.isWalking) {
-            // Accelerate toward target
-            const ax = (targetVx - this.vx) * config.acceleration * dt;
-            const ay = (targetVy - this.vy) * config.acceleration * dt;
-            this.vx += ax;
-            this.vy += ay;
-        } else {
-            // Apply friction when not moving
-            const friction = config.friction * dt;
-            if (Math.abs(this.vx) < friction) {
-                this.vx = 0;
-            } else {
-                this.vx -= Math.sign(this.vx) * friction;
-            }
-            if (Math.abs(this.vy) < friction) {
-                this.vy = 0;
-            } else {
-                this.vy -= Math.sign(this.vy) * friction;
-            }
-        }
-        
-        // Calculate new position
-        let newX = this.x + this.vx * dt;
-        let newY = this.y + this.vy * dt;
-        
-        // Collision response - try each axis separately
-        const hw = config.width / 2;
-        const hh = config.height / 2;
-        
-        // Check X movement
-        if (this.kitchen.canMoveTo(newX, this.y, config.width, config.height)) {
-            this.x = newX;
-        } else {
-            this.vx = 0;
-        }
-        
-        // Check Y movement
-        if (this.kitchen.canMoveTo(this.x, newY, config.width, config.height)) {
-            this.y = newY;
-        } else {
-            this.vy = 0;
         }
         
         // Update walking animation
@@ -166,16 +265,19 @@ export class Character {
     }
     
     /**
+     * Ease-out quadratic for snappy movement feel
+     */
+    easeOutQuad(t) {
+        return 1 - (1 - t) * (1 - t);
+    }
+    
+    /**
      * Apply stun effect from NPC collision
      */
     applyStun(npcType) {
         const config = CHARACTER_CONFIG;
         this.stunTime = config.stunDuration;
         this.isStunned = true;
-        
-        // Slight knockback
-        this.vx *= -0.5;
-        this.vy *= -0.5;
         
         // Generate bump message
         const messages = {
@@ -190,7 +292,7 @@ export class Character {
      * Get the visual bob offset for walking animation
      */
     getBobOffset() {
-        if (!this.isWalking && Math.abs(this.vx) < 10 && Math.abs(this.vy) < 10) {
+        if (!this.isWalking) {
             return 0;
         }
         return Math.sin(this.walkTime) * CHARACTER_CONFIG.bobAmount;
@@ -245,5 +347,29 @@ export class Character {
             width: CHARACTER_CONFIG.width,
             height: CHARACTER_CONFIG.height
         };
+    }
+    
+    /**
+     * Get grid position (for debugging/display)
+     */
+    getGridPosition() {
+        return { gridX: this.gridX, gridY: this.gridY };
+    }
+    
+    /**
+     * Get effective velocity (for collision detection compatibility)
+     * Returns a velocity vector based on current movement direction
+     */
+    get vx() {
+        if (!this.isMoving) return 0;
+        const direction = this.toX - this.fromX;
+        // Return a normalized velocity representing movement speed
+        return direction !== 0 ? Math.sign(direction) * 100 : 0;
+    }
+    
+    get vy() {
+        if (!this.isMoving) return 0;
+        const direction = this.toY - this.fromY;
+        return direction !== 0 ? Math.sign(direction) * 100 : 0;
     }
 }

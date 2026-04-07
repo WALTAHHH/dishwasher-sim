@@ -190,12 +190,15 @@ class AvatarGame {
     startGame() {
         this.showScreen('game');
         
-        // Reset character position
+        // Reset character to spawn (grid-aligned)
         const spawn = this.kitchen.getSpawnPoint();
-        this.character.x = spawn.x;
-        this.character.y = spawn.y;
-        this.character.vx = 0;
-        this.character.vy = 0;
+        const gridSize = 40; // matches CHARACTER_CONFIG.gridSize
+        this.character.gridX = Math.round(spawn.x / gridSize);
+        this.character.gridY = Math.round(spawn.y / gridSize);
+        this.character.x = this.character.gridX * gridSize;
+        this.character.y = this.character.gridY * gridSize;
+        this.character.isMoving = false;
+        this.character.moveProgress = 0;
         this.character.heldItem = null;
         this.character.stunTime = 0;
         this.character.isStunned = false;
@@ -269,9 +272,7 @@ class AvatarGame {
             // Handle collision based on type
             switch (type) {
                 case COLLISION_TYPE.LIGHT_BUMP:
-                    // Just slow down, no stun
-                    this.character.vx *= 0.5;
-                    this.character.vy *= 0.5;
+                    // Light bump - just a warning with grid movement
                     this.showFeedback('Watch your step!', 'info');
                     break;
                     
@@ -296,13 +297,11 @@ class AvatarGame {
                     }
                     this.character.applyStun(npc.type);
                     this.showFeedback('💥 CRASH! Dishes everywhere!', 'error');
-                    // Spawn some visual chaos (optional effect)
                     break;
                     
                 default:
-                    // Fallback to light bump
-                    this.character.vx *= 0.5;
-                    this.character.vy *= 0.5;
+                    // Light bump fallback
+                    this.showFeedback('Watch it!', 'info');
             }
             
             // Play bump sound (if available)

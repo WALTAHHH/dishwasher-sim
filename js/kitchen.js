@@ -237,12 +237,14 @@ export class Kitchen {
     }
     
     /**
-     * Get spawn position (starting point for player)
+     * Get spawn position (starting point for player - grid aligned)
      */
     getSpawnPoint() {
+        const tileSize = KITCHEN_CONFIG.tileSize;
+        // Return center of a grid cell near the middle of the kitchen
         return {
-            x: this.width / 2,
-            y: this.height / 2 + 50
+            x: Math.round((this.width / 2) / tileSize) * tileSize,
+            y: Math.round((this.height / 2 + 40) / tileSize) * tileSize
         };
     }
 }
