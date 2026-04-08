@@ -58,6 +58,10 @@ class AvatarGame {
             showNPCProgress: true  // Show chef cooking progress bars
         };
         
+        // Hand washing state
+        this.isHoldingSpace = false;
+        this.handWashActive = false;
+        
         // Setup
         this.setupInput();
         this.setupUI();
@@ -122,6 +126,7 @@ class AvatarGame {
                     break;
                 case ' ':
                     e.preventDefault();
+                    this.isHoldingSpace = true;
                     this.interact();
                     break;
                 case 'r':
@@ -151,6 +156,14 @@ class AvatarGame {
                 case 'd':
                 case 'arrowright':
                     this.character.setInput('right', false);
+                    break;
+                case ' ':
+                    this.isHoldingSpace = false;
+                    // Cancel hand washing if released
+                    if (this.handWashActive) {
+                        this.game.cancelHandWash();
+                        this.handWashActive = false;
+                    }
                     break;
             }
         });
@@ -275,6 +288,23 @@ class AvatarGame {
             
             // Check NPC collisions
             this.checkNPCCollisions();
+            
+            // Handle hand washing while space is held
+            if (this.handWashActive && this.isHoldingSpace) {
+                const station = this.character.getCurrentStation();
+                if (station === 'hand_wash') {
+                    const completed = this.game.updateHandWash(dt);
+                    if (completed) {
+                        this.handWashActive = false;
+                        this.character.heldItem = this.game.heldDish;
+                        audio.playDishPlace();
+                    }
+                } else {
+                    // Walked away from sink - cancel
+                    this.game.cancelHandWash();
+                    this.handWashActive = false;
+                }
+            }
         }
         
         // Check if wave changed (spawn more NPCs)
@@ -366,7 +396,8 @@ class AvatarGame {
             npcs: this.npcManager.getAll(),
             overflowState: this.overflowState,
             restaurantState: this.npcManager.getRestaurantState(),
-            showNPCProgress: this.settings.showNPCProgress
+            showNPCProgress: this.settings.showNPCProgress,
+            handWashProgress: this.game.isHandWashing ? this.game.handWashProgress : 0
         });
         
         // Debug overlay
@@ -390,6 +421,9 @@ class AvatarGame {
         switch (station) {
             case 'intake':
                 this.interactIntake();
+                break;
+            case 'hand_wash':
+                this.interactHandWash();
                 break;
             case 'dishwasher':
                 this.interactDishwasher();
@@ -465,6 +499,19 @@ class AvatarGame {
         // Check if overflow is now clear
         if (!this.hasOverflowDishes()) {
             this.overflowState.showWarning = false;
+        }
+    }
+    
+    interactHandWash() {
+        // If already hand washing, let the update loop handle it
+        if (this.handWashActive) {
+            return;
+        }
+        
+        // Try to start hand washing
+        if (this.game.startHandWash()) {
+            this.handWashActive = true;
+            audio.playUIClick();
         }
     }
     

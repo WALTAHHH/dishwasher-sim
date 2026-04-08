@@ -428,11 +428,21 @@ export class Renderer {
         if (gameState.nearStation) {
             const zone = STATION_ZONES[gameState.nearStation];
             
+            // Customize prompt for hand wash station
+            let prompt = `Press SPACE to interact with ${zone.label}`;
+            if (gameState.nearStation === 'hand_wash' && gameState.heldItem) {
+                if (!gameState.heldItem.canDishwasher && gameState.heldItem.dirty) {
+                    prompt = 'Hold SPACE to wash 🫧';
+                } else if (gameState.heldItem.canDishwasher) {
+                    prompt = 'Use dishwasher for this item';
+                }
+            }
+            
             // "Press Space to interact" prompt
             ctx.font = 'bold 16px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillStyle = '#fff';
-            ctx.fillText(`Press SPACE to interact with ${zone.label}`, this.canvas.width / 2, this.canvas.height - 30);
+            ctx.fillText(prompt, this.canvas.width / 2, this.canvas.height - 30);
         }
         
         // Held item indicator (top-left)
@@ -489,11 +499,47 @@ export class Renderer {
         // Draw player on top of NPCs
         this.drawCharacter(character);
         
+        // Draw hand washing progress bar above player
+        if (gameState.handWashProgress > 0) {
+            this.drawHandWashProgress(character.x, character.y - 50, gameState.handWashProgress);
+        }
+        
         this.drawHUD({
             nearStation: character.getCurrentStation(),
             heldItem: character.heldItem,
             ...gameState
         });
+    }
+    
+    /**
+     * Draw hand washing progress bar
+     */
+    drawHandWashProgress(x, y, progress) {
+        const ctx = this.ctx;
+        const width = 60;
+        const height = 10;
+        const barX = x - width / 2;
+        
+        // Background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(barX - 2, y - 2, width + 4, height + 4);
+        
+        // Progress fill (teal gradient for hand washing)
+        const gradient = ctx.createLinearGradient(barX, y, barX + width, y);
+        gradient.addColorStop(0, '#1abc9c');
+        gradient.addColorStop(1, '#16a085');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(barX, y, width * progress, height);
+        
+        // Border
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(barX - 2, y - 2, width + 4, height + 4);
+        
+        // Scrubbing bubbles emoji above
+        ctx.font = '16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🫧', x, y - 10);
     }
     
     /**

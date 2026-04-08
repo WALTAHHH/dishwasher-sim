@@ -54,6 +54,7 @@ export const DISHES = {
 // Station types
 export const STATIONS = {
     INTAKE: 'intake',
+    HAND_WASH: 'hand_wash',
     DISHWASHER: 'dishwasher',
     DRYING: 'drying',
     STORAGE: 'storage'
@@ -62,6 +63,7 @@ export const STATIONS = {
 // Station order for tab cycling (left to right)
 const STATION_ORDER = [
     STATIONS.INTAKE,
+    STATIONS.HAND_WASH,
     STATIONS.DISHWASHER,
     STATIONS.DRYING,
     STATIONS.STORAGE
@@ -96,6 +98,11 @@ export class Game {
         this.timeRemaining = 180; // 3 minutes
         this.dishesClean = 0;
         this.dishesSpawned = 0;
+        
+        // Hand washing state
+        this.isHandWashing = false;
+        this.handWashProgress = 0;
+        this.handWashDuration = 2000; // 2 seconds to wash
         
         // Callbacks for UI updates
         this.onUpdate = null;
@@ -214,6 +221,9 @@ export class Game {
             case STATIONS.INTAKE:
                 this.interactIntake();
                 break;
+            case STATIONS.HAND_WASH:
+                this.interactHandWash();
+                break;
             case STATIONS.DISHWASHER:
                 this.interactDishwasher();
                 break;
@@ -236,6 +246,97 @@ export class Game {
             // Pick up dish from intake
             this.heldDish = this.intake.shift();
         }
+    }
+    
+    /**
+     * Start hand washing - called when player interacts with hand wash sink
+     * Returns true if washing started, false if can't wash
+     */
+    startHandWash() {
+        if (!this.heldDish) {
+            this.onFeedback?.('Pick up a dish first!', 'warning');
+            return false;
+        }
+        
+        if (!this.heldDish.dirty) {
+            this.onFeedback?.('This dish is already clean!', 'info');
+            return false;
+        }
+        
+        // Check if this dish CAN go in dishwasher - if so, suggest that
+        if (this.heldDish.canDishwasher) {
+            this.onFeedback?.('This can go in the dishwasher!', 'info');
+            return false;
+        }
+        
+        // Start hand washing
+        this.isHandWashing = true;
+        this.handWashProgress = 0;
+        return true;
+    }
+    
+    /**
+     * Update hand washing progress (called each frame while washing)
+     * @param {number} dt - delta time in seconds
+     * @returns {boolean} true if washing completed
+     */
+    updateHandWash(dt) {
+        if (!this.isHandWashing) return false;
+        
+        this.handWashProgress += (dt * 1000) / this.handWashDuration;
+        
+        if (this.handWashProgress >= 1) {
+            this.completeHandWash();
+            return true;
+        }
+        
+        this.onUpdate?.();
+        return false;
+    }
+    
+    /**
+     * Cancel hand washing (player walked away or released)
+     */
+    cancelHandWash() {
+        if (this.isHandWashing) {
+            this.isHandWashing = false;
+            this.handWashProgress = 0;
+            this.onUpdate?.();
+        }
+    }
+    
+    /**
+     * Complete the hand wash cycle
+     */
+    completeHandWash() {
+        if (this.heldDish) {
+            this.heldDish.dirty = false;
+            this.onFeedback?.(`✨ ${this.heldDish.name} hand washed!`, 'success');
+        }
+        this.isHandWashing = false;
+        this.handWashProgress = 0;
+        this.onUpdate?.();
+    }
+    
+    interactHandWash() {
+        // Hand wash interaction is handled by avatar-main via hold mechanic
+        // This is just for tap interaction - show hint
+        if (!this.heldDish) {
+            this.onFeedback?.('Pick up a dish that needs hand washing!', 'warning');
+            return;
+        }
+        
+        if (!this.heldDish.dirty) {
+            this.onFeedback?.('Already clean! Take to drying.', 'info');
+            return;
+        }
+        
+        if (this.heldDish.canDishwasher) {
+            this.onFeedback?.('Use dishwasher for this one!', 'info');
+            return;
+        }
+        
+        this.onFeedback?.('Hold SPACE to hand wash...', 'info');
     }
     
     interactDishwasher() {

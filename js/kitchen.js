@@ -26,6 +26,15 @@ export const STATION_ZONES = {
         label: 'Intake',
         color: '#e74c3c'
     },
+    hand_wash: {
+        x: 60,
+        y: 80,
+        width: 100,
+        height: 100,
+        emoji: '🚰',
+        label: 'Hand Wash',
+        color: '#1abc9c'
+    },
     dishwasher: {
         x: 350,
         y: 480,
