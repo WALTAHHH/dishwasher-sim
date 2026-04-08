@@ -9,6 +9,7 @@ import { Renderer, RENDER_SETTINGS } from './renderer.js';
 import { Game, STATIONS, DISHES } from './game.js';
 import { audio } from './audio.js';
 import { NPCManager, COLLISION_TYPE } from './npcs.js';
+import { TouchControls } from './touch-controls.js';
 
 class AvatarGame {
     constructor() {
@@ -60,6 +61,7 @@ class AvatarGame {
         // Setup
         this.setupInput();
         this.setupUI();
+        this.setupTouchControls();
         
         // Wire up busser dropoff callback
         this.npcManager.onBusserDropoff = this.onBusserDropoff.bind(this);
@@ -185,6 +187,34 @@ class AvatarGame {
                 this.closeModal();
             });
         });
+    }
+    
+    setupTouchControls() {
+        // Initialize touch controls with callbacks
+        this.touchControls = new TouchControls({
+            onDirectionStart: (direction) => {
+                if (this.modalOpen) return;
+                this.character.setInput(direction, true);
+            },
+            onDirectionEnd: (direction) => {
+                this.character.setInput(direction, false);
+            },
+            onInteract: () => {
+                if (!this.modalOpen) {
+                    this.interact();
+                }
+            },
+            onRotate: () => {
+                this.rotateHeldItem();
+            }
+        });
+        
+        this.touchControls.init();
+        
+        // Log touch device detection
+        if (this.touchControls.isTouchDevice) {
+            console.log('📱 Touch device detected - touch controls enabled');
+        }
     }
     
     startGame() {
@@ -710,5 +740,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🧽 Dishwasher Simulator - Avatar Mode loaded');
     console.log('👤 You are the DISHWASHER - avoid the chefs and waiters!');
     console.log('🎮 Controls: WASD=move, Space=interact, R=rotate');
+    console.log('📱 Touch: D-Pad to move, Action button to interact');
     console.log('🔧 Press F1 for debug collision view');
 });
