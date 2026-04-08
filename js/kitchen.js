@@ -241,10 +241,12 @@ export class Kitchen {
      */
     getSpawnPoint() {
         const tileSize = KITCHEN_CONFIG.tileSize;
-        // Return center of a grid cell near the middle of the kitchen
+        // Spawn left of the kitchen island, near the intake area
+        // Island is at x: 320-520, y: 250-370 (cols 8-12, rows 6-9)
+        // This puts player at col 5, row 10 - safe and accessible
         return {
-            x: Math.round((this.width / 2) / tileSize) * tileSize,
-            y: Math.round((this.height / 2 + 40) / tileSize) * tileSize
+            x: 5 * tileSize,  // 200px - left of island
+            y: 10 * tileSize  // 400px - below island
         };
     }
 }

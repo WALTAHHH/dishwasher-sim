@@ -83,8 +83,6 @@ export class Character {
         const now = performance.now();
         const inputState = this.input[direction];
         
-        console.log(`[Character] setInput: ${direction} = ${pressed}`);
-        
         if (pressed && !inputState.pressed) {
             // Key just pressed
             inputState.pressed = true;
@@ -92,8 +90,7 @@ export class Character {
             inputState.lastStep = 0;
             
             // Try to move immediately (tap response)
-            const moved = this.tryMove(direction);
-            console.log(`[Character] tryMove result: ${moved}`);
+            this.tryMove(direction);
         } else if (!pressed && inputState.pressed) {
             // Key released
             inputState.pressed = false;
@@ -123,7 +120,6 @@ export class Character {
         if (this.isMoving) {
             // Queue this direction for when current move completes
             this.queuedDirection = direction;
-            console.log(`[Character] tryMove: queued (already moving)`);
             return false;
         }
         
@@ -131,11 +127,8 @@ export class Character {
         const { dx, dy } = this.getDirectionVector(direction);
         
         if (dx === 0 && dy === 0) {
-            console.log(`[Character] tryMove: invalid direction vector`);
             return false;
         }
-        
-        console.log(`[Character] tryMove: gridPos=(${this.gridX},${this.gridY}) delta=(${dx},${dy})`);
         
         // Calculate target grid position
         const targetGridX = this.gridX + dx;
@@ -146,9 +139,7 @@ export class Character {
         const targetY = targetGridY * config.gridSize;
         
         // Check collision
-        const canMove = this.kitchen.canMoveTo(targetX, targetY, config.width, config.height);
-        console.log(`[Character] tryMove: target=(${targetX},${targetY}) canMove=${canMove}`);
-        if (!canMove) {
+        if (!this.kitchen.canMoveTo(targetX, targetY, config.width, config.height)) {
             return false;
         }
         
