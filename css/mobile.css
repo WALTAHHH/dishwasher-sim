@@ -1,4 +1,5 @@
 /* Dishwasher Simulator - Mobile/Touch Styles */
+/* COMPLETE MOBILE UX OVERHAUL */
 
 /* ============================
    TOUCH CONTROLS OVERLAY
@@ -9,14 +10,14 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 200px;
+    height: auto;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    padding: 20px;
+    padding: 16px;
     pointer-events: none;
     z-index: 1000;
-    background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 100%);
+    /* Removed gradient - cleaner look */
 }
 
 .touch-controls.hidden {
@@ -28,70 +29,73 @@
 }
 
 /* ============================
-   D-PAD
+   D-PAD - BIGGER & BETTER
    ============================ */
 
 .touch-dpad {
     display: grid;
-    grid-template-columns: 60px 60px 60px;
-    grid-template-rows: 60px 60px 60px;
-    gap: 4px;
+    grid-template-columns: 70px 70px 70px;
+    grid-template-rows: 70px 70px 70px;
+    gap: 6px;
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
+    opacity: 0.9;
 }
 
 .dpad-btn {
-    background: rgba(74, 159, 255, 0.3);
-    border: 2px solid rgba(74, 159, 255, 0.6);
-    border-radius: 12px;
+    background: rgba(74, 159, 255, 0.4);
+    border: 3px solid rgba(74, 159, 255, 0.7);
+    border-radius: 16px;
     color: white;
-    font-size: 24px;
+    font-size: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.1s ease;
+    transition: all 0.08s ease;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     touch-action: none;
+    /* Better touch feedback */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 .dpad-btn:active,
 .dpad-btn.pressed {
-    background: rgba(74, 159, 255, 0.7);
+    background: rgba(74, 159, 255, 0.85);
     border-color: var(--accent-blue);
-    transform: scale(0.95);
-    box-shadow: 0 0 15px rgba(74, 159, 255, 0.5);
+    transform: scale(0.92);
+    box-shadow: 0 0 20px rgba(74, 159, 255, 0.6), inset 0 2px 10px rgba(255,255,255,0.2);
 }
 
 .dpad-arrow {
-    filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
 }
 
 /* D-Pad layout */
 .dpad-up {
     grid-column: 2;
     grid-row: 1;
-    border-radius: 12px 12px 4px 4px;
+    border-radius: 16px 16px 6px 6px;
 }
 
 .dpad-down {
     grid-column: 2;
     grid-row: 3;
-    border-radius: 4px 4px 12px 12px;
+    border-radius: 6px 6px 16px 16px;
 }
 
 .dpad-left {
     grid-column: 1;
     grid-row: 2;
-    border-radius: 12px 4px 4px 12px;
+    border-radius: 16px 6px 6px 16px;
 }
 
 .dpad-right {
     grid-column: 3;
     grid-row: 2;
-    border-radius: 4px 12px 12px 4px;
+    border-radius: 6px 16px 16px 6px;
 }
 
 .dpad-center {
@@ -103,13 +107,13 @@
 }
 
 /* ============================
-   ACTION BUTTONS
+   ACTION BUTTONS - BIGGER
    ============================ */
 
 .touch-actions {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
     align-items: flex-end;
 }
 
@@ -120,398 +124,68 @@
     justify-content: center;
     border-radius: 50%;
     cursor: pointer;
-    transition: all 0.1s ease;
+    transition: all 0.08s ease;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     touch-action: none;
     padding: 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 .action-interact {
-    width: 80px;
-    height: 80px;
-    background: rgba(15, 155, 142, 0.4);
-    border: 3px solid rgba(15, 155, 142, 0.7);
+    width: 90px;
+    height: 90px;
+    background: rgba(15, 155, 142, 0.5);
+    border: 3px solid rgba(15, 155, 142, 0.8);
 }
 
 .action-interact:active,
 .action-interact.pressed {
-    background: rgba(15, 155, 142, 0.8);
+    background: rgba(15, 155, 142, 0.9);
     border-color: var(--accent-teal);
-    transform: scale(0.95);
-    box-shadow: 0 0 20px rgba(15, 155, 142, 0.6);
+    transform: scale(0.92);
+    box-shadow: 0 0 25px rgba(15, 155, 142, 0.7), inset 0 2px 10px rgba(255,255,255,0.2);
 }
 
 .action-rotate {
-    width: 56px;
-    height: 56px;
-    background: rgba(243, 156, 18, 0.3);
-    border: 2px solid rgba(243, 156, 18, 0.6);
+    width: 64px;
+    height: 64px;
+    background: rgba(243, 156, 18, 0.4);
+    border: 3px solid rgba(243, 156, 18, 0.7);
 }
 
 .action-rotate:active,
 .action-rotate.pressed {
-    background: rgba(243, 156, 18, 0.7);
+    background: rgba(243, 156, 18, 0.85);
     border-color: var(--accent-warm);
-    transform: scale(0.95);
-    box-shadow: 0 0 15px rgba(243, 156, 18, 0.5);
+    transform: scale(0.92);
+    box-shadow: 0 0 20px rgba(243, 156, 18, 0.6), inset 0 2px 10px rgba(255,255,255,0.2);
 }
 
 .action-icon {
-    font-size: 28px;
-    filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+    font-size: 32px;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5));
 }
 
 .action-rotate .action-icon {
-    font-size: 24px;
+    font-size: 26px;
 }
 
 .action-label {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-top: 2px;
-    color: rgba(255,255,255,0.8);
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 /* ============================
-   MOBILE LAYOUT ADJUSTMENTS
+   MOBILE LAYOUT - KITCHEN FIRST
    ============================ */
 
-/* Touch mode - adjust game layout */
-body.touch-mode #game-screen {
-    grid-template-rows: auto 1fr auto;
-    padding-bottom: 180px; /* Room for touch controls */
-}
-
-body.touch-mode #kitchen-container {
-    /* Adjust for mobile */
-}
-
-body.touch-mode #side-panel {
-    max-height: 120px;
-    overflow-x: auto;
-    overflow-y: hidden;
-}
-
-body.touch-mode .panel-section {
-    flex-shrink: 0;
-}
-
-/* Hide keyboard hints on touch devices */
-body.touch-mode .controls-hint {
-    display: none;
-}
-
-/* Larger tap targets for modal buttons */
-body.touch-mode .modal-controls button {
-    padding: 1rem 2rem;
-    min-height: 48px;
-    font-size: 1.1rem;
-}
-
-/* Touch-friendly grid cells in modal */
-body.touch-mode .dishwasher-grid .grid-cell,
-body.touch-mode #modal-dishwasher-grid .grid-cell {
-    min-width: 40px;
-    min-height: 40px;
-}
-
-/* ============================
-   RESPONSIVE BREAKPOINTS
-   ============================ */
-
-/* Tablets and small laptops */
-@media (max-width: 900px) {
-    .touch-controls {
-        height: 180px;
-        padding: 15px;
-    }
-    
-    .touch-dpad {
-        grid-template-columns: 55px 55px 55px;
-        grid-template-rows: 55px 55px 55px;
-    }
-    
-    .dpad-btn {
-        font-size: 22px;
-    }
-    
-    .action-interact {
-        width: 72px;
-        height: 72px;
-    }
-    
-    .action-rotate {
-        width: 50px;
-        height: 50px;
-    }
-}
-
-/* Mobile phones */
-@media (max-width: 600px) {
-    /* Title screen adjustments */
-    #title-screen h1 {
-        font-size: 2rem;
-    }
-    
-    .tagline {
-        font-size: 1rem;
-    }
-    
-    .controls-hint {
-        display: none;
-    }
-    
-    /* Game screen */
-    #game-screen {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto;
-    }
-    
-    #side-panel {
-        grid-column: 1;
-        grid-row: 1;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding: 0.5rem;
-        gap: 0.5rem;
-        border-left: none;
-        border-bottom: 2px solid var(--bg-light);
-    }
-    
-    .panel-section {
-        min-width: max-content;
-        padding: 0.5rem 0.75rem;
-    }
-    
-    .panel-section h3 {
-        font-size: 0.75rem;
-        margin-bottom: 0.25rem;
-    }
-    
-    .panel-section p {
-        font-size: 0.9rem;
-    }
-    
-    #kitchen-container {
-        grid-row: 2;
-    }
-    
-    #game-screen #hud {
-        grid-column: 1;
-        grid-row: 3;
-        gap: 1.5rem;
-        padding: 0.75rem;
-    }
-    
-    /* Touch controls */
-    .touch-controls {
-        height: 160px;
-        padding: 10px 15px;
-    }
-    
-    .touch-dpad {
-        grid-template-columns: 50px 50px 50px;
-        grid-template-rows: 50px 50px 50px;
-        gap: 3px;
-    }
-    
-    .dpad-btn {
-        font-size: 20px;
-        border-radius: 8px;
-    }
-    
-    .action-interact {
-        width: 65px;
-        height: 65px;
-    }
-    
-    .action-rotate {
-        width: 45px;
-        height: 45px;
-    }
-    
-    .action-icon {
-        font-size: 24px;
-    }
-    
-    .action-rotate .action-icon {
-        font-size: 20px;
-    }
-    
-    /* Modal adjustments */
-    .modal-content {
-        width: 95vw;
-        padding: 1rem;
-        max-height: 80vh;
-    }
-    
-    .dishwasher-modal-content .dishwasher-grid,
-    #modal-dishwasher-grid {
-        --grid-cell: 35px;
-        padding: 0.5rem;
-    }
-    
-    .modal h2 {
-        font-size: 1.3rem;
-    }
-    
-    .modal-controls {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    .modal-controls button {
-        width: 100%;
-    }
-    
-    /* Results screen */
-    #results-screen h2 {
-        font-size: 1.8rem;
-    }
-    
-    .results {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 1.5rem;
-    }
-    
-    .stat span:last-child {
-        font-size: 1.5rem;
-    }
-    
-    .results-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        width: 80%;
-    }
-    
-    .results-buttons button {
-        width: 100%;
-    }
-}
-
-/* Very small phones / landscape */
-@media (max-height: 500px) {
-    .touch-controls {
-        height: 120px;
-        padding: 5px 10px;
-    }
-    
-    .touch-dpad {
-        grid-template-columns: 40px 40px 40px;
-        grid-template-rows: 40px 40px 40px;
-        gap: 2px;
-    }
-    
-    .dpad-btn {
-        font-size: 16px;
-        border-radius: 6px;
-    }
-    
-    .action-interact {
-        width: 55px;
-        height: 55px;
-    }
-    
-    .action-rotate {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .action-icon {
-        font-size: 20px;
-    }
-    
-    .touch-actions {
-        gap: 8px;
-    }
-    
-    body.touch-mode #game-screen {
-        padding-bottom: 130px;
-    }
-    
-    body.touch-mode #side-panel {
-        max-height: 80px;
-    }
-}
-
-/* Landscape orientation hint */
-@media (max-width: 600px) and (orientation: portrait) {
-    body.touch-mode::after {
-        /* Optional: hint to rotate to landscape */
-        /* Uncomment to enable
-        content: '📱 Rotate for better view';
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0,0,0,0.8);
-        padding: 1rem 2rem;
-        border-radius: 8px;
-        color: white;
-        z-index: 2000;
-        animation: fadeInOut 3s ease forwards;
-        pointer-events: none;
-        */
-    }
-}
-
-@keyframes fadeInOut {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { opacity: 0; display: none; }
-}
-
-/* ============================
-   HELD ITEM DISPLAY - MOBILE
-   ============================ */
-
-@media (max-width: 600px) {
-    #held-item-display {
-        position: fixed;
-        top: auto;
-        bottom: 220px; /* Above touch controls */
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 500;
-        background: rgba(26, 26, 46, 0.95);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-    }
-    
-    .held-icon {
-        font-size: 1.5rem;
-        padding: 0.25rem;
-    }
-    
-    .held-name {
-        font-size: 0.9rem;
-    }
-}
-
-/* ============================
-   FEEDBACK TOAST - MOBILE
-   ============================ */
-
-@media (max-width: 600px) {
-    #game-screen .feedback-toast,
-    .feedback-toast {
-        bottom: 230px; /* Above touch controls */
-        font-size: 0.9rem;
-        padding: 0.5rem 1rem;
-    }
-}
-
-/* ============================
-   PREVENT SCROLL & ZOOM
-   ============================ */
-
+/* Touch mode - maximize kitchen view */
 body.touch-mode {
     overflow: hidden;
     position: fixed;
@@ -525,8 +199,584 @@ body.touch-mode #game-container {
     overflow: hidden;
 }
 
+body.touch-mode #game-screen {
+    display: flex !important;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport for mobile browsers */
+    padding: 0;
+    gap: 0;
+}
+
+/* Side panel - minimal on mobile */
+body.touch-mode #side-panel {
+    order: 1;
+    flex: 0 0 auto;
+    max-height: 60px;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px 10px;
+    gap: 8px;
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--bg-light);
+}
+
+body.touch-mode .panel-section {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    min-width: auto;
+    background: var(--bg-light);
+    border-radius: 6px;
+}
+
+body.touch-mode .panel-section h3 {
+    font-size: 0.7rem;
+    margin-bottom: 2px;
+}
+
+body.touch-mode .panel-section p {
+    font-size: 0.85rem;
+}
+
+/* Hide less important sections on mobile */
+body.touch-mode #drying-info {
+    display: none;
+}
+
+/* Storage preview - compact */
+body.touch-mode #storage-preview .storage-shelves {
+    display: flex;
+    gap: 4px;
+}
+
+body.touch-mode #storage-preview .shelf {
+    padding: 2px 6px;
+    font-size: 0.8rem;
+}
+
+/* Kitchen container - TAKES THE REST */
+body.touch-mode #kitchen-container {
+    order: 2;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 180px); /* Room for touch controls */
+}
+
+body.touch-mode #kitchen-canvas {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+/* HUD - Minimal */
+body.touch-mode #hud {
+    order: 3;
+    position: fixed;
+    bottom: 190px; /* Above touch controls */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1.5rem;
+    padding: 6px 16px;
+    background: rgba(26, 26, 46, 0.95);
+    border-radius: 20px;
+    border: 1px solid var(--bg-light);
+    z-index: 500;
+}
+
+body.touch-mode .hud-item {
+    gap: 2px;
+}
+
+body.touch-mode .hud-item .label {
+    font-size: 0.65rem;
+}
+
+body.touch-mode .hud-item span:last-child {
+    font-size: 1.1rem;
+}
+
+/* Hide time if space is tight */
+body.touch-mode .hud-time {
+    display: flex;
+}
+
+/* Hide keyboard hints on touch devices */
+body.touch-mode .controls-hint {
+    display: none;
+}
+
 /* ============================
-   TOGGLE BUTTON (optional)
+   MODALS - FULL SCREEN MOBILE
+   ============================ */
+
+body.touch-mode .modal-content {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    border-radius: 0;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+body.touch-mode .dishwasher-modal-content .dishwasher-grid,
+body.touch-mode #modal-dishwasher-grid {
+    --grid-cell: min(11vw, 45px);
+    padding: 8px;
+    flex: 0 0 auto;
+}
+
+body.touch-mode .modal h2 {
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+}
+
+body.touch-mode .modal-subtitle {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+body.touch-mode .modal-controls {
+    flex-direction: row;
+    gap: 10px;
+    margin-top: auto;
+    padding: 12px 0;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+}
+
+body.touch-mode .modal-controls button {
+    flex: 1;
+    padding: 14px 20px;
+    min-height: 52px;
+    font-size: 1rem;
+}
+
+/* Touch-friendly grid cells in modal */
+body.touch-mode .dishwasher-grid .grid-cell,
+body.touch-mode #modal-dishwasher-grid .grid-cell {
+    min-width: 40px;
+    min-height: 40px;
+}
+
+/* ============================
+   HELD ITEM DISPLAY - MOBILE
+   ============================ */
+
+body.touch-mode #held-item-display {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 500;
+    background: rgba(26, 26, 46, 0.95);
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid var(--accent-blue);
+}
+
+body.touch-mode .held-icon {
+    font-size: 1.3rem;
+    padding: 2px;
+}
+
+body.touch-mode .held-name {
+    font-size: 0.85rem;
+}
+
+body.touch-mode .held-status {
+    font-size: 0.7rem;
+}
+
+/* ============================
+   FEEDBACK TOAST - MOBILE
+   ============================ */
+
+body.touch-mode #game-screen .feedback-toast,
+body.touch-mode .feedback-toast {
+    bottom: 260px;
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    border-radius: 20px;
+    max-width: 80vw;
+    text-align: center;
+}
+
+/* ============================
+   ZONE PROMPT - MOBILE
+   ============================ */
+
+body.touch-mode .zone-prompt {
+    bottom: 200px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    max-width: 85vw;
+}
+
+body.touch-mode .zone-prompt kbd {
+    display: none; /* Hide keyboard hints */
+}
+
+body.touch-mode .zone-prompt .zone-text::after {
+    content: ' (tap Action)';
+    color: var(--accent-teal);
+}
+
+/* ============================
+   TITLE SCREEN - MOBILE
+   ============================ */
+
+body.touch-mode #title-screen {
+    padding: 20px;
+}
+
+body.touch-mode #title-screen h1 {
+    font-size: 2rem;
+}
+
+body.touch-mode .tagline {
+    font-size: 1rem;
+}
+
+body.touch-mode .controls-hint {
+    display: none !important;
+}
+
+body.touch-mode #btn-start {
+    padding: 1.2rem 3rem;
+    font-size: 1.2rem;
+}
+
+/* Hide HUD and held item when game screen is not active */
+body.touch-mode #game-screen:not(.active) #hud {
+    display: none !important;
+}
+
+body.touch-mode #game-screen:not(.active) #held-item-display {
+    display: none !important;
+}
+
+body.touch-mode #game-screen:not(.active) #side-panel {
+    display: none !important;
+}
+
+/* Also hide touch controls on non-game screens */
+body.touch-mode:has(#title-screen.active) .touch-controls,
+body.touch-mode:has(#results-screen.active) .touch-controls {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* ============================
+   RESULTS SCREEN - MOBILE
+   ============================ */
+
+body.touch-mode #results-screen {
+    padding: 20px;
+}
+
+body.touch-mode #results-screen h2 {
+    font-size: 1.8rem;
+}
+
+body.touch-mode .results {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+body.touch-mode .stat span:last-child {
+    font-size: 1.5rem;
+}
+
+body.touch-mode .results-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 80%;
+    max-width: 300px;
+}
+
+body.touch-mode .results-buttons button {
+    width: 100%;
+    padding: 1rem;
+}
+
+/* ============================
+   LANDSCAPE MODE - MAXIMIZE WIDTH
+   ============================ */
+
+@media (orientation: landscape) and (max-height: 500px) {
+    .touch-controls {
+        padding: 8px 20px;
+    }
+    
+    .touch-dpad {
+        grid-template-columns: 55px 55px 55px;
+        grid-template-rows: 55px 55px 55px;
+        gap: 4px;
+    }
+    
+    .dpad-btn {
+        font-size: 22px;
+        border-radius: 10px;
+    }
+    
+    .action-interact {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .action-rotate {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .action-icon {
+        font-size: 26px;
+    }
+    
+    .action-rotate .action-icon {
+        font-size: 20px;
+    }
+    
+    .touch-actions {
+        gap: 10px;
+    }
+    
+    body.touch-mode #kitchen-container {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 140px);
+    }
+    
+    body.touch-mode #hud {
+        bottom: 145px;
+        padding: 4px 12px;
+    }
+    
+    body.touch-mode .hud-item span:last-child {
+        font-size: 0.95rem;
+    }
+    
+    body.touch-mode #side-panel {
+        max-height: 45px;
+        padding: 4px 10px;
+    }
+    
+    body.touch-mode .panel-section {
+        padding: 2px 8px;
+    }
+    
+    body.touch-mode .zone-prompt {
+        bottom: 150px;
+        padding: 6px 12px;
+    }
+    
+    body.touch-mode .feedback-toast {
+        bottom: 200px;
+    }
+    
+    body.touch-mode #held-item-display {
+        top: 55px;
+    }
+}
+
+/* ============================
+   SMALL PHONES (< 375px)
+   ============================ */
+
+@media (max-width: 375px) {
+    .touch-dpad {
+        grid-template-columns: 60px 60px 60px;
+        grid-template-rows: 60px 60px 60px;
+        gap: 4px;
+    }
+    
+    .dpad-btn {
+        font-size: 24px;
+    }
+    
+    .action-interact {
+        width: 75px;
+        height: 75px;
+    }
+    
+    .action-rotate {
+        width: 55px;
+        height: 55px;
+    }
+}
+
+/* ============================
+   LARGE PHONES (> 400px)
+   ============================ */
+
+@media (min-width: 400px) and (max-width: 768px) {
+    .touch-dpad {
+        grid-template-columns: 75px 75px 75px;
+        grid-template-rows: 75px 75px 75px;
+        gap: 6px;
+    }
+    
+    .dpad-btn {
+        font-size: 30px;
+        border-radius: 18px;
+    }
+    
+    .action-interact {
+        width: 95px;
+        height: 95px;
+    }
+    
+    .action-rotate {
+        width: 68px;
+        height: 68px;
+    }
+    
+    .action-icon {
+        font-size: 36px;
+    }
+    
+    .action-rotate .action-icon {
+        font-size: 28px;
+    }
+}
+
+/* ============================
+   TABLETS (768px - 900px)
+   ============================ */
+
+@media (min-width: 768px) and (max-width: 900px) {
+    body.touch-mode #game-screen {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    body.touch-mode #side-panel {
+        max-height: 80px;
+    }
+    
+    body.touch-mode #kitchen-container {
+        padding-bottom: 200px;
+    }
+    
+    body.touch-mode #hud {
+        bottom: 210px;
+    }
+    
+    .touch-controls {
+        padding: 20px 30px;
+    }
+    
+    .touch-dpad {
+        grid-template-columns: 70px 70px 70px;
+        grid-template-rows: 70px 70px 70px;
+    }
+    
+    .action-interact {
+        width: 85px;
+        height: 85px;
+    }
+    
+    .action-rotate {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* ============================
+   NON-TOUCH RESPONSIVE (<900px)
+   For desktop users with small windows
+   ============================ */
+
+@media (max-width: 900px) {
+    body:not(.touch-mode) #game-screen {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    body:not(.touch-mode) #side-panel {
+        grid-column: 1;
+        grid-row: 1;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0.5rem;
+        gap: 0.5rem;
+        border-left: none;
+        border-bottom: 2px solid var(--bg-light);
+    }
+    
+    body:not(.touch-mode) .panel-section {
+        min-width: max-content;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    body:not(.touch-mode) #kitchen-container {
+        grid-row: 2;
+    }
+    
+    body:not(.touch-mode) #game-screen #hud {
+        grid-column: 1;
+        grid-row: 3;
+    }
+}
+
+/* ============================
+   PREVENT SCROLL & ZOOM
+   ============================ */
+
+body.touch-mode * {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* But allow text selection in modals */
+body.touch-mode .modal-content {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+/* ============================
+   SAFE AREA INSETS (iPhone X+)
+   ============================ */
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .touch-controls {
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+    
+    body.touch-mode #kitchen-container {
+        padding-bottom: calc(180px + env(safe-area-inset-bottom));
+    }
+    
+    @media (orientation: landscape) and (max-height: 500px) {
+        body.touch-mode #kitchen-container {
+            padding-bottom: calc(140px + env(safe-area-inset-bottom));
+        }
+        
+        .touch-controls {
+            padding-left: calc(20px + env(safe-area-inset-left));
+            padding-right: calc(20px + env(safe-area-inset-right));
+        }
+    }
+}
+
+/* ============================
+   TOGGLE BUTTON
    ============================ */
 
 .touch-toggle-btn {
@@ -534,11 +784,11 @@ body.touch-mode #game-container {
     top: 10px;
     left: 10px;
     z-index: 1001;
-    background: rgba(74, 159, 255, 0.3);
-    border: 2px solid rgba(74, 159, 255, 0.6);
+    background: rgba(74, 159, 255, 0.4);
+    border: 2px solid rgba(74, 159, 255, 0.7);
     color: white;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     cursor: pointer;
     display: none;
@@ -547,8 +797,8 @@ body.touch-mode #game-container {
     font-size: 20px;
 }
 
-/* Show toggle on devices that might want to toggle */
-@media (max-width: 900px) {
+/* Show toggle on tablets */
+@media (min-width: 768px) and (max-width: 900px) {
     .touch-toggle-btn {
         display: flex;
     }
@@ -556,4 +806,18 @@ body.touch-mode #game-container {
 
 .touch-toggle-btn:active {
     background: rgba(74, 159, 255, 0.7);
+}
+
+/* ============================
+   CARRYING INDICATOR - MOBILE
+   ============================ */
+
+body.touch-mode .carrying-indicator {
+    top: auto;
+    bottom: 200px;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 16px;
+    border-radius: 20px;
 }

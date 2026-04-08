@@ -18,7 +18,7 @@ export class TouchControls {
         
         // Movement repeat for holding direction
         this.moveRepeatInterval = null;
-        this.moveRepeatDelay = 150; // ms between repeated moves when holding
+        this.moveRepeatDelay = 100; // ms between repeated moves when holding (faster for mobile)
         
         // DOM elements (will be set in init)
         this.dpad = null;
@@ -62,7 +62,7 @@ export class TouchControls {
      * Check viewport and show/hide controls accordingly
      */
     checkViewportSize() {
-        const isMobileViewport = window.innerWidth <= 768 || window.innerHeight <= 500;
+        const isMobileViewport = window.innerWidth <= 900 || window.innerHeight <= 600;
         
         if (isMobileViewport || this.isTouchDevice) {
             this.show();
